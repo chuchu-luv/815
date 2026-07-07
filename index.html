@@ -38,9 +38,13 @@
     }
     .brand { display:flex; align-items:center; gap:12px; min-width:0; }
     .mark {
-      width:52px; height:52px; border-radius:18px; background:linear-gradient(145deg,var(--green),#25a860);
+      width:52px; height:52px; overflow:hidden; border-radius:18px; background:linear-gradient(145deg,var(--green),#25a860);
       display:grid; place-items:center; box-shadow:0 8px 16px rgba(15,122,67,.2); flex:0 0 auto;
     }
+    .mark img {
+      display:block; width:100%; height:100%; object-fit:cover; background:#fff;
+    }
+    .mark.has-logo { background:#fff; }
     .brand h1 { margin:0; font-size:clamp(17px,3vw,25px); letter-spacing:-.04em; }
     .brand p { margin:4px 0 0; color:var(--muted); font-size:13px; }
     .right-tools { display:flex; gap:8px; align-items:center; }
@@ -234,6 +238,8 @@
     .set-winner-badge { display:inline-flex; align-items:center; justify-content:center; min-width:86px; padding:7px 10px; border-radius:999px; background:#f0f5f1; color:#5f7468; font-size:12px; font-weight:950; }
     .set-winner-badge.done { background:#e4f7eb; color:var(--green-2); }
     .set-winner-badge.live { background:#fff3c5; color:#8a5b00; }
+    .set-winner-badge.skipped { background:#f0f4f1; color:#708177; }
+    .preview-chip.skipped { color:#708177; background:#f0f4f1; border-color:#e0e8e2; }
     .set-teams { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; }
     .set-team-name { font-size:18px; font-weight:950; letter-spacing:-.03em; }
     .set-team-name.right { text-align:right; }
@@ -252,6 +258,10 @@
     .info-box { background:#f7faf8; border:1px solid var(--line); border-radius:12px; padding:10px; }
     .info-box small { display:block; color:var(--muted); font-size:10px; font-weight:900; margin-bottom:4px; }
     .info-box b { font-size:13px; }
+    .point-detail { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+    .point-detail .point-team { font-size:12px; font-weight:950; color:var(--green-2); }
+    .point-detail .point-value { color:var(--green); font-size:15px; font-weight:950; }
+    .point-detail .point-zero { color:#8aa096; }
     .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:17px; flex-wrap:wrap; }
     .login-note { color:var(--muted); font-size:13px; font-weight:700; line-height:1.55; }
     .field-label { display:block; color:var(--green-2); font-size:12px; font-weight:950; margin:13px 0 6px; }
@@ -272,6 +282,26 @@
       .grid.two,.grid.three { grid-template-columns:1fr; }
       .hero-grid { grid-template-columns:1fr; }
       .hero-score { text-align:left; }
+    }
+    @media (max-width:580px) {
+      /* 휴대폰 대시보드: 첫 화면에서 경기 목록을 바로 볼 수 있게 압축 */
+      .hero { padding:20px 18px 18px; min-height:0; margin-bottom:12px; }
+      .hero h2 { font-size:28px; line-height:1.13; margin:6px 0 6px; }
+      .hero p { font-size:12px; }
+      .eyebrow { font-size:10px; letter-spacing:.10em; }
+      .hero-meta { margin-top:12px; gap:5px; }
+      .pill { padding:5px 7px; font-size:10px; }
+      .hero-score {
+        position:absolute; right:18px; bottom:16px; text-align:right;
+        display:flex; align-items:baseline; gap:5px;
+      }
+      .hero-score b { font-size:26px; }
+      .hero-score span { font-size:10px; }
+      .tabs { margin-bottom:12px; padding:5px; gap:4px; }
+      .tab { padding:8px 10px; font-size:12px; }
+      .dashboard-match-list .match-card { min-height:112px; }
+      .dashboard-more { width:100%; margin-top:10px; }
+      .dashboard-recent { display:none; }
     }
     @media (max-width:580px) {
       .app { padding:12px 12px 42px; }
@@ -346,6 +376,64 @@
     }
     .standing-card .table-wrap {
       background:#fff;
+      overflow-x:visible;
+    }
+    .standing-card table {
+      min-width:0;
+      table-layout:fixed;
+    }
+    .standing-card th,
+    .standing-card td {
+      padding:8px 4px;
+      font-size:clamp(11px,2.9vw,13px);
+    }
+    .standing-card th:nth-child(1),
+    .standing-card td:nth-child(1) { width:12%; }
+    .standing-card th:nth-child(2),
+    .standing-card td:nth-child(2) { width:18%; }
+    .standing-card th:nth-child(3),
+    .standing-card td:nth-child(3) { width:13%; }
+    .standing-card th:nth-child(4),
+    .standing-card td:nth-child(4) { width:14%; }
+    .standing-card th:nth-child(5),
+    .standing-card td:nth-child(5) { width:24%; }
+    .standing-card th:nth-child(6),
+    .standing-card td:nth-child(6) { width:19%; }
+    .standing-card th:nth-child(2),
+    .standing-card td.team-cell {
+      text-align:left;
+      padding-left:8px;
+    }
+    .standing-card td.team-cell {
+      white-space:normal;
+      word-break:keep-all;
+      line-height:1.2;
+    }
+    .standing-card .rate-cell b {
+      display:block;
+      color:var(--stand-accent,#0b5e34);
+      font-size:inherit;
+    }
+    .standing-card .rate-cell small {
+      display:block;
+      margin-top:2px;
+      color:#7d9286;
+      font-size:9px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    @media (max-width: 430px) {
+      .standing-card th,
+      .standing-card td {
+        padding:7px 3px;
+        font-size:11px;
+      }
+      .standing-card .rank-badge {
+        width:22px;
+        height:22px;
+        border-radius:8px;
+        font-size:11px;
+      }
     }
     .standing-card .standing-title-badge {
       display:inline-flex;
@@ -385,13 +473,380 @@
     .match-card.match-w-b { --division:#e07a5f; --division-soft:#fff5f1; border-left-color:#e07a5f; background:linear-gradient(135deg,#fff5f1 0%,#fff 56%); }
     .match-card.match-x-a { --division:#1d9b8a; --division-soft:#eefcf9; border-left-color:#1d9b8a; background:linear-gradient(135deg,#eefcf9 0%,#fff 56%); }
 
+  
+    /* 실제 대진표처럼 위쪽에 우승, 아래쪽에 이전 라운드를 배치 */
+    .tournament-tree-wrap {
+      overflow-x:auto;
+      padding:8px 2px 18px;
+    }
+    .tournament-tree {
+      min-width:860px;
+      padding:10px 18px 24px;
+      position:relative;
+    }
+    .tree-champion {
+      width:220px;
+      margin:0 auto 10px;
+      padding:10px 12px;
+      text-align:center;
+      border-radius:15px;
+      background:linear-gradient(135deg,#fff5bf,#fffdf3);
+      border:2px solid #e5b935;
+      color:#7b5700;
+      font-weight:950;
+      box-shadow:0 7px 16px rgba(166,116,0,.1);
+    }
+    .tree-champion small {
+      display:block;
+      color:#9b7a29;
+      font-size:11px;
+      margin-bottom:4px;
+    }
+    .tree-connector {
+      width:2px;
+      height:17px;
+      margin:0 auto;
+      background:#b8d6c1;
+    }
+    .tree-tier {
+      display:grid;
+      gap:26px;
+      align-items:start;
+      position:relative;
+    }
+    .tree-tier.final {
+      grid-template-columns:260px;
+      justify-content:center;
+    }
+    .tree-tier.semifinal {
+      grid-template-columns:repeat(2, minmax(220px,1fr));
+      gap:180px;
+      margin-top:20px;
+    }
+    .tree-tier.quarterfinal {
+      grid-template-columns:repeat(4, minmax(185px,1fr));
+      gap:28px;
+      margin-top:28px;
+    }
+    .tree-card {
+      position:relative;
+      text-align:left;
+      background:#fff;
+      border:2px solid #dcebe1;
+      border-radius:14px;
+      padding:10px;
+      color:var(--ink);
+      box-shadow:0 7px 15px rgba(22,76,47,.05);
+    }
+    .tree-card:hover { border-color:#8fcb9f; transform:translateY(-1px); }
+    .tree-card.final-card { border-color:#e0b335; background:#fffdf5; }
+    .tree-card:after {
+      content:"";
+      position:absolute;
+      top:-22px;
+      left:50%;
+      width:2px;
+      height:20px;
+      background:#b8d6c1;
+    }
+    .tree-tier.final .tree-card:after { top:-20px; height:18px; }
+    .tree-tier.quarterfinal .tree-card:after { top:-28px; height:26px; }
+    .tree-card-meta {
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:7px;
+      padding-top:7px;
+      border-top:1px dashed #dcebe1;
+      color:#788b80;
+      font-size:10px;
+      font-weight:850;
+    }
+    .tree-card .bracket-team { font-size:13px; }
+    .tree-round-label {
+      margin:0 0 9px;
+      text-align:center;
+      color:#638072;
+      font-size:12px;
+      font-weight:950;
+    }
+    @media (max-width:680px) {
+      .tournament-tree { min-width:760px; padding-left:10px; padding-right:10px; }
+      .tree-tier.semifinal { gap:100px; }
+      .tree-tier.quarterfinal { gap:18px; }
+    }
+
+  
+    /* 메인 요약: 짧고 클릭 가능한 상태 필터 */
+    .dashboard-summary {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:9px;
+      margin-bottom:12px;
+    }
+    .metric-button {
+      appearance:none;
+      width:100%;
+      min-height:76px;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:16px;
+      padding:11px 13px;
+      color:var(--ink);
+      box-shadow:0 6px 15px rgba(22,76,47,.045);
+      transition:.16s ease;
+    }
+    .metric-button:hover { transform:translateY(-1px); border-color:#9fceb0; }
+    .metric-button.active {
+      border-color:var(--green);
+      background:linear-gradient(135deg,#eaf8ef,#fff);
+      box-shadow:0 8px 17px rgba(15,122,67,.11);
+    }
+    .metric-button small { display:block; color:var(--muted); font-size:11px; font-weight:950; }
+    .metric-button b { display:inline-block; margin-top:3px; font-size:26px; line-height:1; letter-spacing:-.06em; }
+    .metric-button span { display:block; margin-top:4px; color:var(--green); font-size:11px; font-weight:850; }
+    .metric-button[data-dashboard-status="진행중"].active { border-color:#d78a00; background:#fff9e8; }
+    .metric-button[data-dashboard-status="종료"].active { border-color:#0e9a52; background:#effcf3; }
+    .metric-button[data-dashboard-status="예정"].active { border-color:#3178d4; background:#edf6ff; }
+    @media (max-width:680px) {
+      .dashboard-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+      .metric-button { min-height:67px; padding:9px 10px; border-radius:13px; }
+      .metric-button b { font-size:23px; }
+      .metric-button span { display:none; }
+    }
+
+    /* 대진표: CSS가 일부 적용되지 않아도 형태가 깨지지 않도록 구성 */
+    .bracket-board-wrap { overflow-x:auto; padding:8px 0 20px; }
+    .bracket-board { min-width:920px; padding:8px 16px 32px; }
+    .bracket-winner {
+      width:240px; margin:0 auto; padding:10px 14px; text-align:center;
+      border:2px solid #df6b74; border-radius:15px;
+      background:linear-gradient(180deg,#fff5f6 0%, #fff0f1 100%);
+      color:#a12c43; font-weight:950;
+      box-shadow:0 10px 20px rgba(180, 63, 89, .12);
+    }
+    .bracket-winner small { display:block; margin-bottom:3px; color:#cc5a73; font-size:11px; }
+    .bracket-stem { width:2px; height:18px; margin:0 auto; background:#b7d2c0; }
+    .bracket-row { display:grid; align-items:start; position:relative; }
+    .bracket-row.final-row { grid-template-columns:340px; justify-content:center; margin-top:10px; }
+    .bracket-row.semi-row { grid-template-columns:repeat(2,300px); justify-content:space-between; gap:260px; margin-top:38px; }
+    .bracket-row.quarter-row { grid-template-columns:repeat(4,210px); justify-content:space-between; gap:28px; margin-top:42px; }
+    .bracket-row.semi-row::before,
+    .bracket-row.quarter-row::before {
+      content:""; position:absolute; left:110px; right:110px; top:-13px; height:3px; background:#b7d2c0; border-radius:999px;
+    }
+    .bracket-row.quarter-row::before { left:105px; right:105px; }
+    .bracket-slot { position:relative; }
+    .bracket-slot:before {
+      content:""; display:block; width:3px; height:18px; margin:-19px auto 8px; background:#b7d2c0; border-radius:999px;
+    }
+    .bracket-slot:after {
+      content:""; position:absolute; top:-16px; left:50%; transform:translateX(-50%);
+      width:9px; height:9px; border-radius:50%; background:#b7d2c0;
+    }
+    .bracket-card-force {
+      display:block; width:100%; text-align:left; color:var(--ink); background:#fff;
+      border:2px solid #d6e8dc; border-radius:16px; padding:10px 12px; box-shadow:0 7px 15px rgba(22,76,47,.055);
+    }
+    .bracket-card-force.final { border-color:#e1b330; background:#fffdf6; }
+    .bracket-card-force:hover { border-color:#83c59a; transform:translateY(-1px); }
+    .bracket-face {
+      display:grid; grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);
+      align-items:center; gap:8px;
+    }
+    .bracket-side {
+      min-height:58px; border-radius:12px; padding:8px 10px; background:#f6fbf7;
+      display:flex; align-items:center; justify-content:center; gap:6px; text-align:center;
+      font-weight:950; font-size:15px; line-height:1.25; color:var(--ink);
+    }
+    .bracket-side.winner {
+      background:var(--green); color:#fff;
+      box-shadow:0 6px 14px rgba(15,122,67,.18);
+    }
+    .bracket-side-name {
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      word-break:keep-all;
+    }
+    .bracket-check { font-size:18px; font-weight:950; line-height:1; flex:0 0 auto; }
+    .bracket-vs {
+      text-align:center; font-size:12px; font-weight:950; color:#8da399; letter-spacing:.08em;
+    }
+    .bracket-card-force .bracket-meta {
+      display:flex; justify-content:space-between; gap:7px; margin-top:8px; padding-top:8px;
+      border-top:1px dashed #d9e8de; color:#71877a; font-size:10px; font-weight:850;
+    }
+    .bracket-round-name { text-align:center; margin:0 0 8px; color:#5c7869; font-size:12px; font-weight:950; }
+    @media (max-width: 680px) {
+      .bracket-board { min-width:920px; }
+    }
+
+  
+    /* 대시보드 조별 선두: 1·2위까지 한눈에 보는 슬림 카드 */
+    .leader-section { margin-top:14px; padding:15px 17px 17px; }
+    .leader-section .section-title { margin-bottom:10px; }
+    .leader-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(205px,1fr));
+      gap:10px;
+    }
+    .leader-card {
+      appearance:none;
+      width:100%;
+      min-height:92px;
+      text-align:left;
+      border:1px solid color-mix(in srgb, var(--leader-accent) 24%, white);
+      border-left:6px solid var(--leader-accent);
+      border-radius:15px;
+      padding:10px 11px;
+      background:linear-gradient(135deg,var(--leader-soft),#fff 78%);
+      color:var(--ink);
+      box-shadow:none;
+      transition:.16s ease;
+    }
+    .leader-card:hover {
+      transform:translateY(-1px);
+      border-color:var(--leader-accent);
+      box-shadow:0 8px 16px color-mix(in srgb, var(--leader-accent) 12%, transparent);
+    }
+    .leader-card:focus-visible { outline:3px solid color-mix(in srgb, var(--leader-accent) 42%, white); outline-offset:2px; }
+    .leader-group-title {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:7px;
+      color:var(--leader-accent);
+      font-size:12px;
+      font-weight:950;
+    }
+    .leader-open { font-size:10px; color:var(--leader-accent); opacity:.82; }
+    .leader-ranks { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .leader-rank {
+      min-width:0;
+      border-radius:10px;
+      padding:6px 7px;
+      background:rgba(255,255,255,.74);
+      border:1px solid color-mix(in srgb, var(--leader-accent) 12%, white);
+    }
+    .leader-rank-head {
+      display:flex;
+      align-items:center;
+      gap:5px;
+      color:#6b8174;
+      font-size:10px;
+      font-weight:950;
+    }
+    .leader-rank-num {
+      display:inline-grid;
+      place-items:center;
+      flex:0 0 auto;
+      width:17px;
+      height:17px;
+      border-radius:6px;
+      color:var(--leader-accent);
+      background:color-mix(in srgb, var(--leader-accent) 12%, white);
+      font-size:10px;
+      font-weight:950;
+    }
+    .leader-team {
+      overflow:hidden;
+      margin-top:3px;
+      color:var(--ink);
+      font-size:15px;
+      font-weight:950;
+      line-height:1.25;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .leader-record { margin-top:2px; color:var(--leader-accent); font-size:10px; font-weight:900; }
+    .leader-team.undecided,
+    .leader-record.undecided { color:#96a79e; }
+    @media (max-width:680px) {
+      .leader-section { margin-top:12px; padding:13px 12px 14px; }
+      .leader-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+      .leader-card { min-height:88px; padding:9px 8px; border-left-width:5px; }
+      .leader-group-title { font-size:11px; margin-bottom:6px; }
+      .leader-ranks { gap:5px; }
+      .leader-rank { padding:5px 5px; }
+      .leader-team { font-size:13px; }
+      .leader-record { font-size:9px; }
+    }
+
+  
+    /* 관전자 페이지 공지사항 */
+    .notice-bell {
+      position:relative;
+      width:44px;
+      height:44px;
+      display:inline-grid;
+      place-items:center;
+      border:1px solid #f0d2a1;
+      border-radius:15px;
+      background:#fffaf0;
+      color:#896000;
+      font-size:20px;
+      box-shadow:0 6px 14px rgba(141,98,0,.08);
+      transition:.16s ease;
+    }
+    .notice-bell:hover { transform:translateY(-1px); border-color:#e8b34c; }
+    .notice-bell[hidden] { display:none; }
+    .notice-bell em {
+      position:absolute;
+      top:-6px;
+      right:-6px;
+      min-width:18px;
+      height:18px;
+      padding:0 4px;
+      display:grid;
+      place-items:center;
+      border:2px solid #fff;
+      border-radius:999px;
+      background:#e05050;
+      color:#fff;
+      font-size:10px;
+      font-style:normal;
+      font-weight:950;
+      line-height:1;
+    }
+    .notice-list { display:grid; gap:9px; margin-top:3px; }
+    .notice-item {
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding:12px;
+      border:1px solid #e4eee7;
+      border-radius:13px;
+      background:#fbfffc;
+      color:var(--ink);
+      font-size:14px;
+      font-weight:800;
+      line-height:1.45;
+    }
+    .notice-item-index {
+      width:23px;
+      height:23px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:8px;
+      background:#e7f7ec;
+      color:var(--green-2);
+      font-size:11px;
+      font-weight:950;
+    }
+
+  
+    body.viewer-mode #viewerLinkBtn,
+    body.viewer-mode #adminBtn { display:none !important; }
+
   </style>
 </head>
 <body>
   <div class="app">
     <div class="topbar">
       <div class="brand">
-        <div class="mark" aria-hidden="true">
+        <div class="mark" id="brandLogo" aria-hidden="true">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <circle cx="16" cy="16" r="12.5" stroke="white" stroke-width="2.3" opacity=".9"/>
             <path d="M7 11.6c4.5.2 7.1 2.1 8.9 5.1 1.7 2.8 4.1 4.3 9.1 4.2M9.2 22c1.3-4.2 4.1-6.2 7.4-6.3 3.9-.2 6.5-2.8 6.9-6.6" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -399,12 +854,15 @@
           </svg>
         </div>
         <div>
-          <h1>공주교대 동문화합의 날</h1>
-          <p>2026 배구대회 운영·관전자 플랫폼</p>
+          <h1 id="brandTitle">공주교대 동문화합의 날</h1>
+          <p id="brandSubtitle">2026 배구대회 운영 플랫폼</p>
         </div>
       </div>
       <div class="right-tools">
         <button class="button soft" id="refreshBtn">↻ 새로고침</button>
+        <button class="notice-bell" id="noticeBtn" hidden aria-label="공지사항" title="공지사항">
+          <span aria-hidden="true">🔔</span><em id="noticeCount">0</em>
+        </button>
         <button class="button line" id="viewerLinkBtn">🔗 관전자 링크</button>
         <button class="button primary" id="adminBtn">🔐 관리자 인증</button>
       </div>
@@ -452,19 +910,27 @@
 <script>
 (() => {
   const API_URL = 'https://script.google.com/macros/s/AKfycbx73EKswpYBkL9XmHilXkVVUfPWzLerL9ZY6qNcdrnLeYBT-_1LTZabeHTJ0wMAkPbK/exec';
-  const viewerMode = new URLSearchParams(location.search).get('viewer') === '1';
+  const pageParams = new URLSearchParams(location.search);
+  const viewerValue = String(pageParams.get('viewer') || pageParams.get('mode') || pageParams.get('view') || '').toLowerCase();
+  const viewerMode = ['1', 'true', 'yes', 'viewer', 'public'].includes(viewerValue);
   const state = {
     data: null,
     page: 'dashboard',
     matchFilter: '전체',
     matchVenueFilter: '전체',
     dashboardVenueFilter: '전체',
+    dashboardStatusFilter: '전체',
     standingFilter: '전체',
+    standingGroupFilter: '전체',
     tournamentFilter: '남자',
     adminKey: localStorage.getItem('gnueVolleyAdminKey') || '',
     selectedMatchId: null,
     loading: false
   };
+
+  if (viewerMode) {
+    document.body.classList.add('viewer-mode');
+  }
 
   const $ = (selector, root=document) => root.querySelector(selector);
   const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -538,6 +1004,27 @@
     return pairs.map(([a,b]) => `${a}:${b}`).join(' · ');
   }
 
+  function pointDetailHtml(teamA, pointA, teamB, pointB) {
+    const a = pointA === null || pointA === '' || pointA === undefined ? '–' : pointA;
+    const b = pointB === null || pointB === '' || pointB === undefined ? '–' : pointB;
+    const classA = Number(a) === 0 ? 'point-zero' : '';
+    const classB = Number(b) === 0 ? 'point-zero' : '';
+    return `<span class="point-detail">
+      <span class="point-team">${escapeHtml(teamA)}</span><span class="point-value ${classA}">+${a}</span>
+      <span style="color:#b4c5ba;font-weight:900">·</span>
+      <span class="point-team">${escapeHtml(teamB)}</span><span class="point-value ${classB}">+${b}</span>
+    </span>`;
+  }
+
+  function tournamentSetResultHtml(match) {
+    const hasAnyScore = [match.set1A, match.set1B, match.set2A, match.set2B, match.set3A, match.set3B]
+      .some(v => v !== null && v !== '' && v !== undefined);
+    if (!hasAnyScore) return '미진행';
+    const a = Number(match.setWinsA || 0);
+    const b = Number(match.setWinsB || 0);
+    return `${a} : ${b}`;
+  }
+
   function getMatch(id) {
     return state.data?.allMatches?.find(match => match.id === id) || null;
   }
@@ -575,16 +1062,27 @@
     });
   }
 
-  async function loadData(showBusy=true) {
+  async function loadData(showBusy=true, silent=false) {
+    if (state.loading) return;
+    state.loading = true;
+
     if (showBusy) renderLoading();
+
     try {
       const payload = await api({action:'data'});
       if (!payload?.ok) throw new Error(payload?.error || '데이터를 불러오지 못했습니다.');
+
       state.data = payload;
       syncHero();
       render();
       return payload;
+
     } catch (error) {
+      if (silent) {
+        console.warn('자동 새로고침 실패:', error.message);
+        return;
+      }
+
       $('#main').innerHTML = `
         <div class="empty">
           <div style="font-size:28px;margin-bottom:8px">⚠️</div>
@@ -593,16 +1091,120 @@
           <div style="margin-top:14px"><button class="button primary" onclick="window.__gnueReload()">다시 시도</button></div>
         </div>`;
       toast(error.message);
+
+    } finally {
+      state.loading = false;
     }
+  }
+
+  const AUTO_REFRESH_MS = 30000;
+
+  function autoRefreshSafe_() {
+    const modalOpen = $('#modalOverlay')?.classList.contains('show');
+
+    // 점수 입력·공지 팝업을 보는 중에는 화면을 새로 그리지 않음
+    if (document.visibilityState !== 'visible' || modalOpen || state.loading) {
+      return;
+    }
+
+    loadData(false, true);
+  }
+
+  function startAutoRefresh_() {
+    window.setInterval(autoRefreshSafe_, AUTO_REFRESH_MS);
+
+    // 다른 앱을 보다가 다시 돌아왔을 때도 최신 결과를 조용히 반영
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        autoRefreshSafe_();
+      }
+    });
+  }
+
+  function logoUrlFromConfig(config) {
+    const raw = String(
+      config['로고주소'] ||
+      config['로고 주소'] ||
+      config['로고URL'] ||
+      config['로고 URL'] ||
+      config['로고'] ||
+      ''
+    ).trim();
+
+    if (!raw) return '';
+
+    // Google Drive 공유 링크 / uc 링크 모두 이미지 주소로 사용할 수 있게 정리
+    const fileMatch = raw.match(/\/file\/d\/([^/?]+)/);
+    if (fileMatch) return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
+
+    const idMatch = raw.match(/[?&]id=([^&]+)/);
+    if (idMatch && raw.includes('drive.google.com')) {
+      return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+    }
+
+    return raw;
+  }
+
+  function setBrandLogo(url) {
+    const box = $('#brandLogo');
+    if (!box) return;
+
+    const fallback = box.dataset.fallback || box.innerHTML;
+    box.dataset.fallback = fallback;
+
+    if (!url) {
+      box.innerHTML = fallback;
+      box.classList.remove('has-logo');
+      return;
+    }
+
+    const image = new Image();
+    image.alt = '대회 로고';
+    image.src = url;
+    image.onload = () => {
+      box.innerHTML = '';
+      box.appendChild(image);
+      box.classList.add('has-logo');
+    };
+    image.onerror = () => {
+      box.innerHTML = fallback;
+      box.classList.remove('has-logo');
+    };
+  }
+
+  function syncNoticeButton() {
+    const notices = state.data?.notices || [];
+    const noticeBtn = $('#noticeBtn');
+    const noticeCount = $('#noticeCount');
+
+    if (!noticeBtn || !noticeCount) return;
+
+    noticeBtn.hidden = !viewerMode;
+    noticeCount.textContent = notices.length > 99 ? '99+' : String(notices.length);
+    noticeCount.style.display = notices.length ? 'grid' : 'none';
   }
 
   function syncHero() {
     const config = state.data?.config || {};
-    $('#heroTitle').textContent = config['대회명'] || '2026 공주교대 동문화합의 날 배구대회';
+    const title = config['대회명'] || '2026 공주교대 동문화합의 날 배구대회';
+
+    $('#brandTitle').textContent = title;
+    $('#brandSubtitle').textContent = viewerMode ? '실시간 경기 현황' : '배구대회 운영 플랫폼';
+    $('#heroTitle').textContent = title;
     $('#heroSubtitle').textContent = config['일시'] || '2026.08.15.(토) 09:00';
     $('#finishedCount').textContent = state.data?.summary?.finished ?? '–';
-    $('#adminBtn').textContent = viewerMode ? '👀 관전자 화면' : (state.adminKey ? '🔓 관리자 인증됨' : '🔐 관리자 인증');
-    $('#adminBtn').className = viewerMode ? 'button line' : (state.adminKey ? 'button soft' : 'button primary');
+    document.title = title;
+
+    $('#viewerLinkBtn').hidden = viewerMode;
+    $('#adminBtn').hidden = viewerMode;
+
+    if (!viewerMode) {
+      $('#adminBtn').textContent = state.adminKey ? '🔓 관리자 인증됨' : '🔐 관리자 인증';
+      $('#adminBtn').className = state.adminKey ? 'button soft' : 'button primary';
+    }
+
+    setBrandLogo(logoUrlFromConfig(config));
+    syncNoticeButton();
   }
 
   function renderLoading() {
@@ -672,63 +1274,159 @@
           <span class="team right">${escapeHtml(text(match.teamB,''))}</span>
         </div>
         <div class="match-bottom">
-          <span class="venue-chip ${gymClass}">📍 ${escapeHtml(text(match.venue,''))}</span>
+          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(text(match.venue,''))}</span>
           <span>⏱ ${escapeHtml(text(match.datetime,''))}</span>
           <span class="scoreline" style="color:${palette.accent}">${escapeHtml(scoreText || (match.winner ? '결과 보기' : '점수 입력'))}</span>
         </div>
       </button>`;
   }
 
+  function dashboardMatchCard(match) {
+    const scoreText = setScoreLine(match);
+    const gymClass = venueClass(match.venue);
+    const palette = getMatchPalette(match);
+    const cardStyle = `--division:${palette.accent}; --division-soft:${palette.soft}; border-left:8px solid ${palette.accent}; background:linear-gradient(135deg, ${palette.soft} 0%, #fff 56%)`;
+    return `
+      <button class="match-card" style="${cardStyle}" data-dashboard-match="${escapeHtml(match.id)}">
+        <div class="match-top">
+          <span class="tag ${statusClass(match.status)}"><span class="status-dot ${statusClass(match.status)}"></span>&nbsp;${escapeHtml(statusLabel(match.status))}</span>
+          <span class="tag round" style="color:${palette.accent}; background:${palette.soft}; border-color:${palette.accent}33">${escapeHtml(palette.label)} · ${escapeHtml(match.stage || '예선')}</span>
+        </div>
+        <div class="match-teamrow">
+          <span class="team">${escapeHtml(text(match.teamA,''))}</span>
+          <span class="vs">VS</span>
+          <span class="team right">${escapeHtml(text(match.teamB,''))}</span>
+        </div>
+        <div class="match-bottom">
+          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(text(match.venue,''))}</span>
+          <span>⏱ ${escapeHtml(text(match.datetime,''))}</span>
+          <span class="scoreline" style="color:${palette.accent}">경기 운영으로 ›</span>
+        </div>
+      </button>`;
+  }
+
+  function goToMatch(matchId) {
+    const match = getMatch(matchId);
+    if (!match) return;
+
+    state.page = 'matches';
+    state.matchFilter = match.division || '전체';
+    state.matchVenueFilter = match.venue || '전체';
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 페이지 이동이 먼저 보이고, 이어서 해당 경기의 상세 입력창을 열도록 함
+    setTimeout(() => openMatch(matchId), 180);
+  }
+
   function renderDashboard() {
     const data = state.data;
+    const allMatches = data.allMatches || [];
     const liveRaw = data.liveMatches || [];
-    const venueFilters = getVenueFilters(liveRaw);
-    const live = state.dashboardVenueFilter === '전체'
+    const status = state.dashboardStatusFilter;
+    const baseList = status === '전체'
       ? liveRaw
-      : liveRaw.filter(m => m.venue === state.dashboardVenueFilter);
-    const finished = (data.allMatches || []).filter(m => m.status === '종료').slice(-6).reverse();
+      : allMatches.filter(match => match.status === status);
+
+    const venueFilters = getVenueFilters(baseList);
+    const list = state.dashboardVenueFilter === '전체'
+      ? baseList
+      : baseList.filter(match => match.venue === state.dashboardVenueFilter);
+
+    const statusTitle = status === '전체' ? '🏐 진행·예정 경기' : `🏐 ${status} 경기`;
+    const statusHint = status === '전체'
+      ? '카드를 누르면 경기 운영으로 이동'
+      : '상단 요약을 누르면 상태별로 전환됩니다.';
+    const finished = allMatches.filter(m => m.status === '종료').slice(-3).reverse();
     const stand = data.standings || [];
 
+    const metrics = [
+      { label:'전체 경기', count:data.summary?.total ?? 0, value:'전체', note:'예선·토너먼트 포함' },
+      { label:'진행 중', count:data.summary?.live ?? 0, value:'진행중', note:'점수 입력 중' },
+      { label:'종료', count:data.summary?.finished ?? 0, value:'종료', note:'결과 확정' },
+      { label:'남은 경기', count:data.summary?.remaining ?? 0, value:'예정', note:'예정 경기' }
+    ];
+
+    const leaderCards = stand.map(group => {
+      const palette = standingPalette(group);
+      const rows = group.rows || [];
+      const hasResult = rows.some(row =>
+        Number(row.games || 0) > 0 ||
+        Number(row.wins || 0) > 0 ||
+        Number(row.losses || 0) > 0 ||
+        Number(row.points || 0) > 0
+      );
+
+      const rankBox = (rank) => {
+        const row = hasResult ? rows[rank - 1] : null;
+        const team = row?.team || '미정';
+        const record = row ? `${row.wins}승 · ${row.points}점` : '경기 전';
+        const undecided = !row ? 'undecided' : '';
+        return `<div class="leader-rank">
+          <div class="leader-rank-head"><span class="leader-rank-num">${rank}</span>위</div>
+          <div class="leader-team ${undecided}">${escapeHtml(team)}</div>
+          <div class="leader-record ${undecided}">${escapeHtml(record)}</div>
+        </div>`;
+      };
+
+      return `<button class="leader-card" style="--leader-accent:${palette.accent};--leader-soft:${palette.soft}" data-leader-group="${escapeHtml(group.key)}">
+        <div class="leader-group-title"><span>${escapeHtml(group.label)}</span><span class="leader-open">순위 보기 ›</span></div>
+        <div class="leader-ranks">${rankBox(1)}${rankBox(2)}</div>
+      </button>`;
+    }).join('');
+
     $('#main').innerHTML = `
-      <div class="grid cards">
-        <section class="card metric"><small>전체 경기</small><b>${data.summary?.total ?? 0}</b><div class="mini">예선·토너먼트 포함</div></section>
-        <section class="card metric"><small>진행 중</small><b>${data.summary?.live ?? 0}</b><div class="mini">점수 입력 중 경기</div></section>
-        <section class="card metric"><small>종료</small><b>${data.summary?.finished ?? 0}</b><div class="mini">결과 확정 경기</div></section>
-        <section class="card metric"><small>남은 경기</small><b>${data.summary?.remaining ?? 0}</b><div class="mini">예정 경기</div></section>
+      <div class="dashboard-summary">
+        ${metrics.map(item => `<button class="metric-button ${state.dashboardStatusFilter===item.value?'active':''}" data-dashboard-status="${item.value}">
+          <small>${item.label}</small><b>${item.count}</b><span>${item.note}</span>
+        </button>`).join('')}
       </div>
 
-      <div class="grid two" style="margin-top:16px">
+      <div class="grid two">
         <section class="card">
-          <div class="section-title"><h3>🏐 진행·예정 경기</h3><small>카드를 누르면 상세 보기</small></div>
+          <div class="section-title"><h3>${statusTitle}</h3><small>${statusHint}</small></div>
           <div class="subtabs" style="margin-top:-2px;margin-bottom:12px">
             ${venueFilters.map(venue => `<button class="subtab ${state.dashboardVenueFilter===venue?'active':''}" data-dashboard-venue-filter="${escapeHtml(venue)}">${escapeHtml(venue)}</button>`).join('')}
           </div>
-          <div class="grid">${live.length ? live.slice(0,8).map(matchCard).join('') : '<div class="empty">선택한 경기장에 표시할 경기가 없습니다.</div>'}</div>
+          <div class="grid dashboard-match-list">${list.length ? list.slice(0,3).map(dashboardMatchCard).join('') : '<div class="empty">선택한 조건에 표시할 경기가 없습니다.</div>'}</div>
+          ${list.length > 3 ? '<button class="button soft dashboard-more" id="dashboardMoreBtn">경기 운영에서 전체 보기 →</button>' : ''}
         </section>
-        <section class="card">
+        <section class="card dashboard-recent">
           <div class="section-title"><h3>✅ 최근 종료 경기</h3><small>결과 확정</small></div>
           <div class="grid">${finished.length ? finished.map(matchCard).join('') : '<div class="empty">아직 종료된 경기가 없습니다.</div>'}</div>
         </section>
       </div>
 
-      <section class="card" style="margin-top:16px">
-        <div class="section-title"><h3>🏆 조별 선두</h3><small>현재 종료 경기 기준</small></div>
-        <div class="grid three">
-          ${stand.map(group => {
-            const lead = group.rows?.[0];
-            return `<div class="card" style="box-shadow:none;padding:14px;background:#fbfffc">
-              <small style="color:var(--muted);font-weight:900">${escapeHtml(group.label)}</small>
-              <div style="font-size:20px;font-weight:950;margin:7px 0">${escapeHtml(lead?.team || '경기 대기')}</div>
-              <span class="tag done">${lead ? `${lead.wins}승 · ${lead.points}점` : '순위 집계 대기'}</span>
-            </div>`;
-          }).join('')}
-        </div>
+      <section class="card leader-section">
+        <div class="section-title"><h3>🏆 조별 1·2위</h3><small>점수 입력 전 조는 미정으로 표시됩니다.</small></div>
+        <div class="leader-grid">${leaderCards || '<div class="empty">조별 순위 데이터가 없습니다.</div>'}</div>
       </section>`;
-    bindMatchCards();
+
+    $$('[data-dashboard-status]').forEach(btn => btn.onclick = () => {
+      state.dashboardStatusFilter = btn.dataset.dashboardStatus;
+      state.dashboardVenueFilter = '전체';
+      renderDashboard();
+    });
     $$('[data-dashboard-venue-filter]').forEach(btn => btn.onclick = () => {
       state.dashboardVenueFilter = btn.dataset.dashboardVenueFilter;
       renderDashboard();
     });
+    $$('[data-dashboard-match]').forEach(btn => btn.onclick = () => goToMatch(btn.dataset.dashboardMatch));
+    $$('[data-leader-group]').forEach(btn => btn.onclick = () => {
+      const group = stand.find(item => item.key === btn.dataset.leaderGroup);
+      if (!group) return;
+      state.page = 'standings';
+      state.standingFilter = group.division;
+      state.standingGroupFilter = group.key;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    $('#dashboardMoreBtn')?.addEventListener('click', () => {
+      state.page = 'matches';
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    bindMatchCards();
   }
 
   function getDivisionFilters(matches) {
@@ -795,40 +1493,89 @@
 
   function renderStandings() {
     const groups = state.data.standings || [];
-    const options = ['전체', ...Array.from(new Set(groups.map(g => g.division)))];
-    const visible = state.standingFilter === '전체' ? groups : groups.filter(g => g.division === state.standingFilter);
+    const divisionOptions = ['전체', ...Array.from(new Set(groups.map(g => g.division)))];
+    const divisionVisible = state.standingFilter === '전체'
+      ? groups
+      : groups.filter(g => g.division === state.standingFilter);
+
+    const groupOptions = divisionVisible.map(group => ({
+      key: group.key,
+      label: group.label
+    }));
+
+    if (state.standingGroupFilter !== '전체' &&
+        !groupOptions.some(option => option.key === state.standingGroupFilter)) {
+      state.standingGroupFilter = '전체';
+    }
+
+    const visible = state.standingGroupFilter === '전체'
+      ? divisionVisible
+      : divisionVisible.filter(group => group.key === state.standingGroupFilter);
 
     $('#main').innerHTML = `
-      <div class="section-title"><div><h3>조별 순위</h3><small>다승 → 승점 → 득실률 → 총득점 기준</small></div><span class="tag done">종료 경기만 합산</span></div>
+      <div class="section-title"><div><h3>조별 순위</h3><small>다승 → 승점 → 득실률(득점÷실점) → 총득점 → 동전 던지기</small></div><span class="tag done">종료 경기만 합산</span></div>
       <div class="subtabs">
-        ${options.map(opt => `<button class="subtab ${state.standingFilter===opt?'active':''} ${opt==='남자'?'division-mens':opt==='여자'?'division-womens':opt==='혼성'?'division-mixed':''}" data-standing-filter="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`).join('')}
+        ${divisionOptions.map(opt => `<button class="subtab ${state.standingFilter===opt?'active':''} ${opt==='남자'?'division-mens':opt==='여자'?'division-womens':opt==='혼성'?'division-mixed':''}" data-standing-filter="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`).join('')}
+      </div>
+      <div class="subtabs" style="margin-top:-5px">
+        <button class="subtab ${state.standingGroupFilter==='전체'?'active':''}" data-standing-group="전체">전체 조</button>
+        ${groupOptions.map(option => `<button class="subtab ${state.standingGroupFilter===option.key?'active':''}" data-standing-group="${escapeHtml(option.key)}">${escapeHtml(option.label)}</button>`).join('')}
       </div>
       <div class="grid two">
-        ${visible.map(group => standingsTable(group)).join('')}
+        ${visible.map(group => standingsTable(group)).join('') || '<div class="empty">표시할 조가 없습니다.</div>'}
       </div>`;
+
     $$('[data-standing-filter]').forEach(btn => btn.onclick = () => {
       state.standingFilter = btn.dataset.standingFilter;
+      state.standingGroupFilter = '전체';
+      renderStandings();
+    });
+    $$('[data-standing-group]').forEach(btn => btn.onclick = () => {
+      state.standingGroupFilter = btn.dataset.standingGroup;
       renderStandings();
     });
   }
 
+  function standingPalette(group) {
+    const division = group?.division || '';
+    const g = group?.group || '';
+
+    if (division === '남자' && g === 'A') return { accent:'#2e78c8', soft:'#eef6ff', header:'#e1efff' };
+    if (division === '남자' && g === 'B') return { accent:'#16a085', soft:'#effcf8', header:'#ddf7ee' };
+    if (division === '남자' && g === 'C') return { accent:'#8b6fd8', soft:'#f4f0ff', header:'#ebe3ff' };
+    if (division === '남자' && g === 'D') return { accent:'#d18a22', soft:'#fff7e8', header:'#ffeecf' };
+    if (division === '여자' && g === 'A') return { accent:'#d0568c', soft:'#fff2f8', header:'#ffe3ef' };
+    if (division === '여자' && g === 'B') return { accent:'#ef6b57', soft:'#fff2ef', header:'#ffe3dc' };
+    if (division === '혼성' && g === 'A') return { accent:'#1d9b8a', soft:'#eefcf9', header:'#def7f1' };
+
+    return { accent:'#168746', soft:'#effaf2', header:'#e4f4e9' };
+  }
+
   function standingsTable(group) {
-    const groupClass = standingGroupClass(group);
-    return `<section class="card standing-card ${groupClass}">
+    const palette = standingPalette(group);
+    const cardStyle = `border-top:8px solid ${palette.accent}; background:linear-gradient(180deg,${palette.soft} 0%,#fff 27%);`;
+    return `<section class="card standing-card" style="${cardStyle}">
       <div class="section-title">
         <h3>${escapeHtml(group.label)}</h3>
-        <span class="standing-title-badge">${group.complete ? '예선 완료' : '예선 진행 중'}</span>
+        <span class="standing-title-badge" style="color:${palette.accent};background:${palette.soft};border-color:${palette.accent}33">${group.complete ? '예선 완료' : '예선 진행 중'}</span>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>순위</th><th>팀</th><th>경기</th><th>승</th><th>패</th><th>승점</th><th>득/실</th><th>득실률</th></tr></thead>
+          <thead style="background:${palette.header};color:${palette.accent}"><tr><th>순위</th><th>팀</th><th>승리</th><th>승점</th><th>득실률</th><th>총득점</th></tr></thead>
           <tbody>
-            ${(group.rows || []).map(row => `<tr class="rank-${row.rank}">
-              <td><span class="rank-badge ${row.rank===1?'one':''}">${row.rank}</span></td>
-              <td class="team-cell">${escapeHtml(row.team)}</td>
-              <td>${row.games}</td><td>${row.wins}</td><td>${row.losses}</td><td><b>${row.points}</b></td>
-              <td>${row.scored} / ${row.allowed}</td><td>${Number(row.rate || 0).toFixed(2)}</td>
-            </tr>`).join('')}
+            ${(group.rows || []).map(row => {
+              const hasPlayed = Number(row.games || 0) > 0;
+              const rate = hasPlayed ? Number(row.rate || 0).toFixed(2) : '–';
+              const scoreRatio = hasPlayed ? `${row.scored}/${row.allowed}` : '–';
+              return `<tr class="rank-${row.rank}">
+                <td><span class="rank-badge ${row.rank===1?'one':''}" style="${row.rank===1 ? `background:${palette.accent}22;color:${palette.accent}` : ''}">${row.rank}</span></td>
+                <td class="team-cell">${escapeHtml(row.team)}</td>
+                <td><b>${row.wins}</b></td>
+                <td><b>${row.points}</b></td>
+                <td class="rate-cell"><b>${rate}</b><small>${scoreRatio}</small></td>
+                <td><b>${hasPlayed ? row.scored : '–'}</b></td>
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
       </div>
@@ -841,21 +1588,20 @@
     const defaultDivision = tournament[state.tournamentFilter] ? state.tournamentFilter : (divisions[0] || '남자');
     state.tournamentFilter = defaultDivision;
     const rounds = tournament[defaultDivision] || {};
-    const order = ['8강','4강','결승'];
-    const shown = order.filter(round => rounds[round]?.length);
 
     $('#main').innerHTML = `
-      <div class="section-title"><div><h3>토너먼트</h3><small>조별 순위 확정 뒤 실제 팀명이 자동 반영됩니다.</small></div><span class="tag round">준결승 패배팀 공동 3위</span></div>
+      <div class="section-title">
+        <div><h3>토너먼트</h3><small>우승은 상단, 결승·4강·8강은 아래로 갈라지는 대진표입니다.</small></div>
+        <span class="tag round">준결승 패배팀 공동 3위</span>
+      </div>
       <div class="subtabs">
         ${divisions.map(division => `<button class="subtab ${defaultDivision===division?'active':''} ${division==='남자'?'division-mens':division==='여자'?'division-womens':division==='혼성'?'division-mixed':''}" data-tournament-filter="${escapeHtml(division)}">${escapeHtml(division)}부</button>`).join('')}
       </div>
-      ${shown.length ? `<div class="bracket-wrap"><div class="bracket">
-        ${shown.map(round => `<section class="round-col">
-          <h4 class="round-name">${escapeHtml(round)}</h4>
-          <div class="round-list">${(rounds[round] || []).map(bracketCard).join('')}</div>
-        </section>`).join('')}
-      </div></div>` : '<div class="empty">아직 생성된 토너먼트가 없습니다.</div>'}
-      ${defaultDivision === '혼성' ? '<div class="card" style="margin-top:14px"><b>혼성은 풀리그 방식입니다.</b><p style="margin:7px 0 0;color:var(--muted);font-weight:700;font-size:13px">조별 순위에서 최종 결과를 확인하세요.</p></div>' : ''}`;
+      ${defaultDivision === '혼성'
+        ? `<div class="card"><b>혼성은 풀리그 방식입니다.</b><p style="margin:7px 0 0;color:var(--muted);font-weight:700;font-size:13px">조별 순위에서 최종 결과를 확인하세요.</p></div>`
+        : tournamentPyramidHtml(rounds)}
+    `;
+
     $$('[data-tournament-filter]').forEach(btn => btn.onclick = () => {
       state.tournamentFilter = btn.dataset.tournamentFilter;
       renderTournament();
@@ -863,15 +1609,78 @@
     $$('[data-tournament-match]').forEach(btn => btn.onclick = () => openMatch(btn.dataset.tournamentMatch));
   }
 
-  function bracketCard(match) {
+  function tournamentPyramidHtml(rounds) {
+    const qf = rounds['8강'] || [];
+    const sf = rounds['4강'] || [];
+    const finalMatch = (rounds['결승'] || [])[0];
+
+    if (!finalMatch && !sf.length && !qf.length) {
+      return '<div class="empty">아직 생성된 토너먼트가 없습니다.</div>';
+    }
+
+    const champion = finalMatch?.winner || '우승팀 대기';
+    const semiHtml = sf.length ? `<div class="bracket-row semi-row">
+      ${sf.map(match => `<div class="bracket-slot"><p class="bracket-round-name">4강</p>${pyramidMatchCard(match)}</div>`).join('')}
+    </div>` : '';
+
+    const qfHtml = qf.length ? `<div class="bracket-row quarter-row">
+      ${qf.map(match => `<div class="bracket-slot"><p class="bracket-round-name">8강</p>${pyramidMatchCard(match)}</div>`).join('')}
+    </div>` : '';
+
+    return `<div class="bracket-board-wrap"><div class="bracket-board">
+      <div class="bracket-winner"><small>🏆 우승</small>${escapeHtml(champion)}</div>
+      <div class="bracket-stem"></div>
+      ${finalMatch ? `<div class="bracket-row final-row"><div class="bracket-slot"><p class="bracket-round-name">결승</p>${pyramidMatchCard(finalMatch, true)}</div></div>` : ''}
+      ${semiHtml}
+      ${qfHtml}
+    </div></div>`;
+  }
+
+  function pyramidMatchCard(match, finalCard=false) {
     const winner = match.winner || '';
-    return `<button class="bracket-card" data-tournament-match="${escapeHtml(match.id)}">
-      <div class="bracket-teams">
-        <div class="bracket-team ${winner && winner===match.teamA?'winner':''}"><span>${escapeHtml(text(match.teamA,''))}</span><span>${winner===match.teamA?'✓':''}</span></div>
-        <div class="bracket-team ${winner && winner===match.teamB?'winner':''}"><span>${escapeHtml(text(match.teamB,''))}</span><span>${winner===match.teamB?'✓':''}</span></div>
+    const aWin = winner && winner === match.teamA;
+    const bWin = winner && winner === match.teamB;
+
+    return `<button class="bracket-card-force ${finalCard ? 'final' : ''}" data-tournament-match="${escapeHtml(match.id)}">
+      <div class="bracket-face">
+        <div class="bracket-side ${aWin ? 'winner' : ''}">
+          <span class="bracket-side-name">${escapeHtml(text(match.teamA,''))}</span>
+          ${aWin ? '<span class="bracket-check">✓</span>' : ''}
+        </div>
+        <div class="bracket-vs">VS</div>
+        <div class="bracket-side ${bWin ? 'winner' : ''}">
+          <span class="bracket-side-name">${escapeHtml(text(match.teamB,''))}</span>
+          ${bWin ? '<span class="bracket-check">✓</span>' : ''}
+        </div>
       </div>
-      <div class="bracket-meta"><span>${escapeHtml(text(match.venue,''))}</span><span>${escapeHtml(statusLabel(match.status))}</span></div>
+      <div class="bracket-meta"><span>🏫 ${escapeHtml(text(match.venue,''))}</span><span>⏱ ${escapeHtml(text(match.datetime,''))}</span></div>
     </button>`;
+  }
+
+  function openNoticeModal() {
+    const notices = (state.data?.notices || []).slice().sort((a, b) => Number(a.order || 9999) - Number(b.order || 9999));
+
+    $('#modalContent').innerHTML = `
+      <div class="modal-head">
+        <div>
+          <h3>🔔 공지사항</h3>
+          <p>운영대장 ‘공지사항’ 시트와 실시간 연동됩니다.</p>
+        </div>
+        <button class="x" id="closeModal">×</button>
+      </div>
+      <div class="notice-list">
+        ${notices.length
+          ? notices.map((notice, index) => `<div class="notice-item">
+              <span class="notice-item-index">${index + 1}</span>
+              <span>${escapeHtml(text(notice.content, ''))}</span>
+            </div>`).join('')
+          : '<div class="empty">등록된 공지사항이 없습니다.</div>'}
+      </div>
+      <div class="modal-actions"><button class="button line" id="closeModal2">닫기</button></div>`;
+
+    showModal();
+    $('#closeModal').onclick = closeModal;
+    $('#closeModal2').onclick = closeModal;
   }
 
   function renderGuide() {
@@ -889,6 +1698,41 @@
     $$('[data-match]').forEach(btn => btn.onclick = () => openMatch(btn.dataset.match));
   }
 
+  function getTournamentMeta(matchId) {
+    const tournament = state.data?.tournament || {};
+    for (const division of Object.values(tournament)) {
+      for (const round of Object.values(division)) {
+        const found = (round || []).find(item => item.id === matchId);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  function getEffectiveMatchMeta(match) {
+    const tournamentMeta = getTournamentMeta(match.id);
+    if (!tournamentMeta) {
+      return {
+        stage: match.stage,
+        division: match.division,
+        group: match.group,
+        sequence: match.order ? `${match.order}경기` : '',
+        venue: match.venue,
+        datetime: match.datetime,
+        note: match.note || ''
+      };
+    }
+    return {
+      stage: '토너먼트',
+      division: tournamentMeta.division || match.division,
+      group: '',
+      sequence: tournamentMeta.round || '토너먼트',
+      venue: tournamentMeta.venue || match.venue,
+      datetime: tournamentMeta.datetime || match.datetime,
+      note: match.note || ''
+    };
+  }
+
   function openMatch(matchId) {
     const match = getMatch(matchId);
     if (!match) {
@@ -897,17 +1741,18 @@
       return toast('경기 정보를 찾지 못했습니다.');
     }
     state.selectedMatchId = matchId;
+    const displayMeta = getEffectiveMatchMeta(match);
     const canEdit = !viewerMode && !!state.adminKey;
     $('#modalContent').innerHTML = `
       <div class="modal-head">
         <div><h3>${escapeHtml(match.teamA)} <span style="color:#95a89e;font-size:14px">VS</span> ${escapeHtml(match.teamB)}</h3>
-        <p>${escapeHtml(match.stage)} · ${escapeHtml(match.division)}${match.group ? ' '+escapeHtml(match.group)+'조' : ''} · 📍 ${escapeHtml(text(match.venue,''))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
+        <p>${escapeHtml(displayMeta.stage)} · ${escapeHtml(displayMeta.division)}${displayMeta.group ? ' '+escapeHtml(displayMeta.group)+'조' : ''}${displayMeta.sequence ? ' · '+escapeHtml(displayMeta.sequence) : ''} · 🏫 ${escapeHtml(text(displayMeta.venue,''))} · ⏱ ${escapeHtml(text(displayMeta.datetime,''))}${displayMeta.note ? ' · '+escapeHtml(displayMeta.note) : ''}</p></div>
         <button class="x" id="closeModal">×</button>
       </div>
       <div class="info-grid">
         <div class="info-box"><small>경기 상태</small><b id="modalStatus">${escapeHtml(statusLabel(match.status))}</b></div>
         <div class="info-box"><small>현재 승자</small><b id="modalWinner">${escapeHtml(text(match.winner,'미확정'))}</b></div>
-        <div class="info-box"><small>승점</small><b id="modalPoints">${match.pointsA ?? '–'} : ${match.pointsB ?? '–'}</b></div>
+        <div class="info-box"><small>${displayMeta.stage === '토너먼트' ? '세트 결과' : '승점'}</small><b id="modalPoints">${displayMeta.stage === '토너먼트' ? tournamentSetResultHtml(match) : pointDetailHtml(match.teamA, match.pointsA, match.teamB, match.pointsB)}</b></div>
       </div>
       <div class="score-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
@@ -961,32 +1806,45 @@
     const c = calcMatchFromInputs(match);
 
     const setMeta = [
-      { key:'s1', label:'1세트', winner:c.setWinners[0] },
-      { key:'s2', label:'2세트', winner:c.setWinners[1] },
-      { key:'s3', label:'3세트', winner:c.setWinners[2] }
+      { key:'s1', label:'1세트', winner:c.setWinners[0], a:c.s1a, b:c.s1b },
+      { key:'s2', label:'2세트', winner:c.setWinners[1], a:c.s2a, b:c.s2b },
+      { key:'s3', label:'3세트', winner:c.setWinners[2], a:c.s3a, b:c.s3b }
     ];
 
     setMeta.forEach(item => {
       const badge = document.getElementById(item.key + 'WinnerBadge');
       if (!badge) return;
+
+      const hasScore = Number.isFinite(item.a) || Number.isFinite(item.b);
+      const notPlayed = c.status === '종료' && !hasScore && !item.winner;
+
+      if (notPlayed) {
+        badge.textContent = '미실시';
+        badge.className = 'set-winner-badge skipped';
+        return;
+      }
+
       const winnerName = item.winner === 'A' ? match.teamA : item.winner === 'B' ? match.teamB : '진행중';
-      badge.textContent = item.winner ? `승 · ${winnerName}` : winnerName;
+      badge.textContent = item.winner ? `🎖️ ${winnerName}` : winnerName;
       badge.className = 'set-winner-badge ' + (item.winner ? 'done' : 'live');
     });
 
-    const summary = [
-      { label:'1세트', winner:c.setWinners[0] },
-      { label:'2세트', winner:c.setWinners[1] },
-      { label:'3세트', winner:c.setWinners[2] }
-    ].map(item => {
+    const summary = setMeta.map(item => {
+      const hasScore = Number.isFinite(item.a) || Number.isFinite(item.b);
+      const notPlayed = c.status === '종료' && !hasScore && !item.winner;
+
+      if (notPlayed) {
+        return `<span class="preview-chip skipped">${item.label} · 미실시</span>`;
+      }
+
       const winnerName = item.winner === 'A' ? match.teamA : item.winner === 'B' ? match.teamB : '진행 중';
-      return `<span class="preview-chip ${item.winner ? 'done' : 'live'}">${item.label} 승 · ${escapeHtml(winnerName)}</span>`;
+      return `<span class="preview-chip ${item.winner ? 'done' : 'live'}">${item.label} 🎖️ ${escapeHtml(winnerName)}</span>`;
     }).join('') + `<span class="preview-chip ${c.status==='종료'?'done':'live'}">세트 ${c.setWinsA} : ${c.setWinsB} · ${c.status}</span>`;
 
     $('#scorePreview').innerHTML = summary;
     $('#modalStatus').textContent = c.status;
     $('#modalWinner').textContent = c.winner || '미확정';
-    $('#modalPoints').textContent = `${c.pointsA === '' ? '–' : c.pointsA} : ${c.pointsB === '' ? '–' : c.pointsB}`;
+    $('#modalPoints').innerHTML = pointDetailHtml(match.teamA, c.pointsA, match.teamB, c.pointsB);
     const badge = $('#modalBadge');
     badge.textContent = c.status;
     badge.className = `tag ${statusClass(c.status)}`;
@@ -1060,7 +1918,7 @@
   function openTournamentPreview(match) {
     $('#modalContent').innerHTML = `
       <div class="modal-head"><div><h3>${escapeHtml(match.teamA || '진출팀 대기')} VS ${escapeHtml(match.teamB || '진출팀 대기')}</h3>
-      <p>${escapeHtml(match.round)} · 📍 ${escapeHtml(text(match.venue,''))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
+      <p>${escapeHtml(match.round)} · 🏫 ${escapeHtml(text(match.venue,''))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
       <button class="x" id="closeModal">×</button></div>
       <div class="card" style="box-shadow:none;background:#f7fff9"><b>현재 상태: ${escapeHtml(statusLabel(match.status))}</b>
       <p style="margin:9px 0 0;color:var(--muted);font-size:13px;font-weight:700">예선 순위와 앞 경기 승자가 확정되면 실제 팀명이 자동으로 표시됩니다.</p></div>
@@ -1139,7 +1997,7 @@
 
   function copyViewerLink() {
     const url = new URL(location.href);
-    url.searchParams.set('viewer','1');
+    url.searchParams.set('viewer','true');
     navigator.clipboard?.writeText(url.toString())
       .then(() => toast('관전자 링크를 복사했습니다.'))
       .catch(() => prompt('이 주소를 복사하세요.', url.toString()));
@@ -1150,11 +2008,13 @@
     if (!tab) return;
     state.page = tab.dataset.page;
     render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   $('#refreshBtn').onclick = () => loadData(true);
   $('#viewerLinkBtn').onclick = copyViewerLink;
-  $('#adminBtn').onclick = () => viewerMode ? toast('현재 관전자 전용 화면입니다.') : openAdminModal();
+  $('#adminBtn').onclick = () => openAdminModal();
+  $('#noticeBtn').onclick = openNoticeModal;
   $('#modalOverlay').addEventListener('click', event => {
     if (event.target.id === 'modalOverlay') closeModal();
   });
@@ -1164,6 +2024,7 @@
 
   window.__gnueReload = () => loadData(true);
   loadData(true);
+  startAutoRefresh_();
 })();
 </script>
 </body>
