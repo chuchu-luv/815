@@ -1315,7 +1315,7 @@
     }
   }
 
-  const AUTO_REFRESH_MS = 30000;
+  const AUTO_REFRESH_MS = 60000;
 
   function autoRefreshSafe_() {
     const modalOpen = $('#modalOverlay')?.classList.contains('show');
@@ -1415,8 +1415,8 @@
     $('#heroDate').textContent = schedule;
     $('#heroTitle').textContent = title;
     $('#heroSubtitle').textContent = viewerMode
-      ? '실시간 경기 현황 · 경기 결과는 30초마다 자동으로 갱신됩니다.'
-      : '실시간 경기 현황 · 운영대장과 연동됩니다.';
+      ? '실시간 경기 현황 · 경기 결과는 60초마다 자동으로 갱신됩니다.'
+      : '실시간 경기 현황';
     $('#finishedCount').textContent = state.data?.summary?.finished ?? '–';
     document.title = title;
 
@@ -1888,7 +1888,7 @@
       <div class="modal-head">
         <div>
           <h3>🔔 공지사항</h3>
-          <p>운영 관련 공지사항입니다.</p>
+          <p>대회 운영관련 안내사항입니다.</p>
         </div>
         <button class="x" id="closeModal">×</button>
       </div>
