@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -300,7 +301,7 @@
       .tab { padding:8px 10px; font-size:12px; }
       .dashboard-match-list .match-card { min-height:112px; }
       .dashboard-more { width:100%; margin-top:10px; }
-      .dashboard-recent { display:none; }
+      .dashboard-recent { display:block; }
     }
     @media (max-width:580px) {
       .app { padding:12px 12px 42px; }
@@ -1025,6 +1026,19 @@
       #viewerLinkBtn::before { content:"🔗"; font-size:16px; }
       #adminBtn::before { content:"🔐"; font-size:16px; }
       .notice-bell { width:36px; height:36px; }
+    }
+
+  
+    @media (max-width:720px) {
+      .dashboard-recent {
+        margin-top:10px;
+      }
+      .dashboard-recent .section-title h3 {
+        font-size:21px;
+      }
+      .dashboard-recent .match-card {
+        min-height:112px;
+      }
     }
 
   </style>
