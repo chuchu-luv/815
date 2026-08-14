@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -823,6 +824,16 @@
       font-weight:800;
       line-height:1.45;
     }
+    .notice-item-content { flex:1 1 auto; min-width:0; white-space:pre-wrap; }
+    .notice-delete {
+      flex:0 0 auto; border:1px solid #efd3d3; background:#fff7f7; color:#b84545;
+      border-radius:9px; padding:5px 8px; font-size:11px; font-weight:900; cursor:pointer;
+    }
+    .notice-admin-box {
+      margin-top:14px; padding:13px; border:1px solid #dbeadf; border-radius:14px; background:#f8fcf9;
+    }
+    .notice-admin-box textarea { width:100%; min-height:82px; resize:vertical; margin-top:7px; }
+
     .notice-item-index {
       width:23px;
       height:23px;
@@ -1041,6 +1052,31 @@
       }
     }
 
+  
+    /* 안내 표 */
+    .info-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .info-table{width:100%;border-collapse:collapse;min-width:620px}
+    .info-table th{padding:11px 10px;background:#eef8f1;color:#0b6d3b;font-size:12px;font-weight:950;text-align:center;border-bottom:1px solid var(--line)}
+    .info-table td{padding:11px 10px;border-bottom:1px solid #e8f0eb;font-size:13px;vertical-align:middle}
+    .info-table tr:last-child td{border-bottom:0}
+    .info-table .name-cell{font-weight:950;color:var(--ink)}
+    .info-table .content-cell{white-space:pre-line;line-height:1.5}
+    .info-table .note-cell{color:var(--muted);font-size:12px;font-weight:700}
+    .info-action-btn{border:1px solid #cfe6d7;background:#f6fcf8;color:#0b6d3b;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
+    .info-action-btn:hover{background:#eaf8ef}
+    .phone-btn{display:inline-flex;align-items:center;gap:5px}
+    .nav-btn{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+    .affiliate-summary{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 15px;margin-bottom:10px;border:1px solid #cfe6d7;border-radius:15px;background:#f7fcf8}
+    .affiliate-summary strong{display:block;font-size:15px;margin-bottom:4px}
+    .affiliate-summary small{color:var(--muted);font-weight:750}
+    @media (max-width:680px){
+      .info-table{min-width:0;table-layout:fixed}
+      .info-table th,.info-table td{padding:9px 6px;font-size:11px;word-break:keep-all}
+      .info-table .note-cell{font-size:10px}
+      .info-action-btn{padding:6px 7px;font-size:11px}
+      .affiliate-summary{grid-template-columns:1fr;padding:12px}
+    }
+
   </style>
 </head>
 <body>
@@ -1089,7 +1125,8 @@
       <button class="tab" data-page="matches">경기 운영</button>
       <button class="tab" data-page="standings">조별 순위</button>
       <button class="tab" data-page="tournament">토너먼트</button>
-      <button class="tab" data-page="guide">대회 요강</button>
+      <button class="tab" data-page="guide-game">경기 안내</button>
+      <button class="tab" data-page="guide-etc">기타 안내</button>
     </nav>
 
     <main id="main">
@@ -1106,7 +1143,7 @@
 
 <script>
 (() => {
-  const API_URL = 'https://script.google.com/macros/s/AKfycbx73EKswpYBkL9XmHilXkVVUfPWzLerL9ZY6qNcdrnLeYBT-_1LTZabeHTJ0wMAkPbK/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxjG_MmJ9t8MaipbVJbhC_W0L-ov53bW40rWBeJRKcV0DATIcIz269v1Q-nExgJ_Bbx/exec';
   const pageParams = new URLSearchParams(location.search);
   const viewerValue = String(pageParams.get('viewer') || pageParams.get('mode') || pageParams.get('view') || '').toLowerCase();
   const viewerMode = ['1', 'true', 'yes', 'viewer', 'public'].includes(viewerValue);
@@ -1120,6 +1157,8 @@
     standingFilter: '전체',
     standingGroupFilter: '전체',
     tournamentFilter: '남자',
+    infoMode: 'game',
+    infoFilter: '경기규칙',
     adminKey: localStorage.getItem('gnueVolleyAdminKey') || '',
     selectedMatchId: null,
     loading: false
@@ -1172,11 +1211,11 @@
       s2a: number($('#s2a')?.value), s2b: number($('#s2b')?.value),
       s3a: number($('#s3a')?.value), s3b: number($('#s3b')?.value),
     };
-    const wins = [
-      getSetWinner(s.s1a,s.s1b,21),
-      getSetWinner(s.s2a,s.s2b,21),
-      getSetWinner(s.s3a,s.s3b,15)
-    ];
+    const w1 = getSetWinner(s.s1a,s.s1b,21);
+    const w2 = w1 ? getSetWinner(s.s2a,s.s2b,21) : '';
+    const needsThirdSet = !!w1 && !!w2 && w1 !== w2;
+    const w3 = needsThirdSet ? getSetWinner(s.s3a,s.s3b,15) : '';
+    const wins = [w1,w2,w3];
     const a = wins.filter(v => v === 'A').length;
     const b = wins.filter(v => v === 'B').length;
     const hasScore = Object.values(s).some(v => Number.isFinite(v));
@@ -1286,7 +1325,7 @@
       timer = setTimeout(() => {
         cleanup();
         reject(new Error('데이터 응답이 늦어지고 있습니다. 잠시 후 다시 시도해 주세요.'));
-      }, 18000);
+      }, 60000);
 
       script.src = `${API_URL}?${query.toString()}`;
       document.head.appendChild(script);
@@ -1413,7 +1452,9 @@
 
     if (!noticeBtn || !noticeCount) return;
 
-    noticeBtn.hidden = !viewerMode;
+    noticeBtn.hidden = viewerMode ? notices.length === 0 : false;
+    noticeBtn.title = viewerMode ? '공지사항' : '공지사항 관리';
+    noticeBtn.setAttribute('aria-label', viewerMode ? '공지사항' : '공지사항 관리');
     noticeCount.textContent = notices.length > 99 ? '99+' : String(notices.length);
     noticeCount.style.display = notices.length ? 'grid' : 'none';
   }
@@ -1456,7 +1497,8 @@
     if (state.page === 'matches') renderMatches();
     if (state.page === 'standings') renderStandings();
     if (state.page === 'tournament') renderTournament();
-    if (state.page === 'guide') renderGuide();
+    if (state.page === 'guide-game') renderGuide('game');
+    if (state.page === 'guide-etc') renderGuide('etc');
   }
 
   function divisionClass(division) {
@@ -1750,7 +1792,7 @@
       : divisionVisible.filter(group => group.key === state.standingGroupFilter);
 
     $('#main').innerHTML = `
-      <div class="section-title"><div><h3>조별 순위</h3><small>다승 → 승점 → 득실률(득점÷실점) → 총득점 → 동전 던지기</small></div><span class="tag done">종료 경기만 합산</span></div>
+      <div class="section-title"><div><h3>조별 순위</h3><small>다승 → 승점 → 득실률(득점÷실점) → 총득점 → 승자승 → 동전 던지기 · 진행 중에는 잠정 순위이며, 완전 동률은 순위를 확정하지 않습니다.</small></div><span class="tag done">종료 경기만 합산</span></div>
       <div class="subtabs">
         ${divisionOptions.map(opt => `<button class="subtab ${state.standingFilter===opt?'active':''} ${opt==='남자'?'division-mens':opt==='여자'?'division-womens':opt==='혼성'?'division-mixed':''}" data-standing-filter="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`).join('')}
       </div>
@@ -1771,6 +1813,7 @@
       state.standingGroupFilter = btn.dataset.standingGroup;
       renderStandings();
     });
+    $$('[data-tie-group]').forEach(btn => btn.onclick = () => openTieDecisionModal(btn.dataset.tieGroup));
   }
 
   function standingPalette(group) {
@@ -1794,7 +1837,10 @@
     return `<section class="card standing-card" style="${cardStyle}">
       <div class="section-title">
         <h3>${escapeHtml(group.label)}</h3>
-        <span class="standing-title-badge" style="color:${palette.accent};background:${palette.soft};border-color:${palette.accent}33">${group.complete ? '예선 완료' : '예선 진행 중'}</span>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <span class="standing-title-badge" style="color:${palette.accent};background:${palette.soft};border-color:${palette.accent}33">${group.complete ? (group.needsCoinToss ? '🪙 순위 결정 대기' : '예선 완료') : '잠정 순위'}</span>
+          ${!viewerMode && group.needsCoinToss ? `<button class="button line" style="padding:7px 9px;font-size:11px;background:#fff6dc;border-color:#e5b84f;color:#7b5200;font-weight:950" data-tie-group="${escapeHtml(group.key)}">🪙 동전 던지기</button>` : ''}
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -1804,9 +1850,12 @@
               const hasPlayed = Number(row.games || 0) > 0;
               const rate = hasPlayed ? Number(row.rate || 0).toFixed(2) : '–';
               const scoreRatio = hasPlayed ? `${row.scored}/${row.allowed}` : '–';
+              const rankText = !group.complete ? `잠정 ${row.rank}` : (row.tiePending ? '동률' : row.rank);
+              const confirmedFirst = group.complete && !row.tiePending && row.rank === 1;
+              const tieNote = group.complete && row.tiePending ? '<small style="display:block;color:#a06c00;font-weight:900;margin-top:2px">🪙 결정 대기</small>' : '';
               return `<tr class="rank-${row.rank}">
-                <td><span class="rank-badge ${row.rank===1?'one':''}" style="${row.rank===1 ? `background:${palette.accent}22;color:${palette.accent}` : ''}">${row.rank}</span></td>
-                <td class="team-cell">${escapeHtml(row.team)}</td>
+                <td><span class="rank-badge ${confirmedFirst?'one':''}" style="${confirmedFirst ? `background:${palette.accent}22;color:${palette.accent}` : (row.tiePending ? 'background:#fff4cf;color:#8a6200;min-width:42px' : '')}">${rankText}</span></td>
+                <td class="team-cell">${escapeHtml(row.team)}${tieNote}</td>
                 <td><b>${row.wins}</b></td>
                 <td><b>${row.points}</b></td>
                 <td class="rate-cell"><b>${rate}</b><small>${scoreRatio}</small></td>
@@ -1896,12 +1945,14 @@
 
   function openNoticeModal() {
     const notices = (state.data?.notices || []).slice().sort((a, b) => Number(a.order || 9999) - Number(b.order || 9999));
+    const canManage = !viewerMode && !!state.adminKey;
+    const needsAuth = !viewerMode && !state.adminKey;
 
     $('#modalContent').innerHTML = `
       <div class="modal-head">
         <div>
-          <h3>🔔 공지사항</h3>
-          <p>대회 공지사항입니다.</p>
+          <h3>🔔 ${canManage ? '공지사항 관리' : '공지사항'}</h3>
+          <p>${canManage ? '여기서 추가·삭제하면 관전자 화면에 바로 반영됩니다.' : '대회 공지사항입니다.'}</p>
         </div>
         <button class="x" id="closeModal">×</button>
       </div>
@@ -1909,26 +1960,250 @@
         ${notices.length
           ? notices.map((notice, index) => `<div class="notice-item">
               <span class="notice-item-index">${index + 1}</span>
-              <span>${escapeHtml(text(notice.content, ''))}</span>
+              <span class="notice-item-content">${escapeHtml(text(notice.content, ''))}</span>
+              ${canManage ? `<button class="notice-delete" data-delete-notice="${escapeHtml(String(notice.id || ''))}">삭제</button>` : ''}
             </div>`).join('')
           : '<div class="empty">등록된 공지사항이 없습니다.</div>'}
       </div>
-      <div class="modal-actions"><button class="button line" id="closeModal2">닫기</button></div>`;
+      ${canManage ? `<div class="notice-admin-box">
+          <label class="field-label" for="newNoticeInput">새 공지사항</label>
+          <textarea class="text-input" id="newNoticeInput" maxlength="500" placeholder="예: 여자 A조 경기장이 홍성고등학교로 변경되었습니다."></textarea>
+          <div class="modal-actions" style="margin-top:9px">
+            <button class="button primary" id="addNoticeBtn">＋ 공지 추가</button>
+          </div>
+        </div>` : ''}
+      <div class="modal-actions">
+        ${needsAuth ? '<button class="button primary" id="noticeLoginBtn">🔐 관리자 인증 후 추가</button>' : ''}
+        <button class="button line" id="closeModal2">닫기</button>
+      </div>`;
 
     showModal();
     $('#closeModal').onclick = closeModal;
     $('#closeModal2').onclick = closeModal;
+    $('#noticeLoginBtn')?.addEventListener('click', openAdminModal);
+    $('#addNoticeBtn')?.addEventListener('click', addNoticeFromModal);
+    $$('[data-delete-notice]').forEach(btn => {
+      btn.onclick = () => deleteNoticeFromModal(btn.dataset.deleteNotice);
+    });
+    setTimeout(() => $('#newNoticeInput')?.focus(), 80);
   }
 
-  function renderGuide() {
-    const guide = state.data.guide || [];
+  async function addNoticeFromModal() {
+    if (!state.adminKey) return openAdminModal();
+    const input = $('#newNoticeInput');
+    const content = input?.value.trim() || '';
+    if (!content) return toast('공지 내용을 입력하세요.');
+    const button = $('#addNoticeBtn');
+    if (button) { button.disabled = true; button.textContent = '추가 중…'; }
+    try {
+      const result = await api({action:'addNotice', adminKey:state.adminKey, content});
+      if (!result?.ok) throw new Error(result?.error || '공지사항을 추가하지 못했습니다.');
+      state.data = result;
+      syncHero();
+      openNoticeModal();
+      toast('공지사항을 추가했습니다.');
+    } catch (error) {
+      toast(error.message);
+      if (button) { button.disabled = false; button.textContent = '＋ 공지 추가'; }
+    }
+  }
+
+  async function deleteNoticeFromModal(id) {
+    if (!state.adminKey) return openAdminModal();
+    if (!id) return toast('공지사항을 찾지 못했습니다.');
+    if (!confirm('이 공지사항을 삭제할까요?')) return;
+    try {
+      const result = await api({action:'deleteNotice', adminKey:state.adminKey, id});
+      if (!result?.ok) throw new Error(result?.error || '공지사항을 삭제하지 못했습니다.');
+      state.data = result;
+      syncHero();
+      openNoticeModal();
+      toast('공지사항을 삭제했습니다.');
+    } catch (error) {
+      toast(error.message);
+    }
+  }
+
+  const VENUE_ADDRESS_MAP = {
+    '홍주초등학교':'충청남도 홍성군 홍북읍 신대로 63',
+    '내포중학교':'충청남도 홍성군 홍북읍 홍학로 41',
+    '내포초등학교':'충청남도 홍성군 홍북읍 홍학로 38',
+    '홍북중학교':'충청남도 홍성군 홍북읍 홍학로 159',
+    '홍성고등학교':'충청남도 홍성군 홍북읍 홍학로 49',
+    '한울초등학교':'충청남도 홍성군 홍북읍 홍학로 131',
+    '홍북초등학교':'충청남도 홍성군 홍북읍 자경로 33'
+  };
+
+  function normalizeInfoCategory(category) {
+    const value = String(category || '').trim();
+    if (value === '식사 안내') return '제휴식당(예약됨)';
+    return value;
+  }
+
+  function renderGuide(mode='game') {
+    const rawInfo = (state.data.info && state.data.info.length)
+      ? state.data.info
+      : (state.data.guide || []).map(item => ({category:'경기규칙', title:item.category, content:item.content, contact:'', note:''}));
+
+    const info = rawInfo.map(item => Object.assign({}, item, { category: normalizeInfoCategory(item.category) }));
+    state.infoMode = mode;
+
+    const gameCategories = ['경기규칙', '경기장 안내', '경기장 관리자'];
+    const gameSet = new Set(gameCategories);
+
+    const modeInfo = mode === 'game'
+      ? info.filter(item => gameSet.has(item.category))
+      : info.filter(item => !gameSet.has(item.category));
+
+    const preferredOrder = mode === 'game'
+      ? gameCategories
+      : ['제휴식당(예약됨)', '식당 안내'];
+
+    const actualCategories = [...new Set(modeInfo.map(item => item.category).filter(Boolean))];
+    const categories = [
+      ...preferredOrder.filter(cat => actualCategories.includes(cat)),
+      ...actualCategories.filter(cat => !preferredOrder.includes(cat))
+    ];
+
+    if (!categories.includes(state.infoFilter)) {
+      state.infoFilter = categories[0] || (mode === 'game' ? '경기규칙' : '제휴식당(예약됨)');
+    }
+
+    const visible = modeInfo.filter(item => item.category === state.infoFilter);
+    const title = mode === 'game' ? '경기 안내' : '기타 안내';
+    const subtitle = mode === 'game'
+      ? '경기규칙·경기장·경기장 관리자 정보를 확인하세요.'
+      : '제휴식당 예약과 주변 식당 정보를 확인하세요.';
+
     $('#main').innerHTML = `
-      <div class="section-title"><div><h3>대회 요강</h3><small>운영대장 ‘대회요강’ </small></div></div>
-      <section class="card">
-        <ul class="rule-list">
-          ${guide.map(item => `<li><b>${escapeHtml(item.category)}</b><span>${escapeHtml(item.content)}</span></li>`).join('') || '<li><b>대회요강을 불러오지 못했습니다.</b></li>'}
-        </ul>
-      </section>`;
+      <div class="section-title"><div><h3>${title}</h3><small>${subtitle}</small></div></div>
+      <div class="subtabs">
+        ${categories.map(cat => `<button class="subtab ${state.infoFilter===cat?'active':''}" data-info-filter="${escapeHtml(cat)}">${escapeHtml(infoCategoryIcon(cat))} ${escapeHtml(cat)}</button>`).join('')}
+      </div>
+      ${renderInfoCategory(state.infoFilter, visible, title)}`;
+
+    $$('[data-info-filter]').forEach(btn => btn.onclick = () => {
+      state.infoFilter = btn.dataset.infoFilter;
+      renderGuide(mode);
+    });
+    bindInfoActions();
+  }
+
+  function renderInfoCategory(category, items, title) {
+    if (!items.length) {
+      return `<section class="card"><div class="empty">${escapeHtml(title)} 내용이 없습니다. 구글시트의 안내 시트에서 내용을 입력해 주세요.</div></section>`;
+    }
+
+    if (category === '경기장 안내') return renderVenueInfoTable(items);
+    if (category === '제휴식당(예약됨)') return renderAffiliateTable(items);
+    if (category === '식당 안내') return renderRestaurantTable(items);
+
+    return `<section class="card"><ul class="rule-list">
+      ${items.map(item => `<li>
+        <b>${escapeHtml(item.title || item.category)}</b>
+        <span style="white-space:pre-line">${escapeHtml(item.content || '')}</span>
+        ${item.contact ? `<div style="margin-top:6px"><button class="info-action-btn phone-btn" data-phone="${escapeHtml(item.contact)}" data-phone-label="${escapeHtml(item.title || '')}">☎ ${escapeHtml(item.contact)}</button></div>` : ''}
+        ${item.note ? `<div style="margin-top:4px;color:var(--muted);font-size:12px;font-weight:750">${escapeHtml(item.note)}</div>` : ''}
+      </li>`).join('')}
+    </ul></section>`;
+  }
+
+  function venueInfoData(item) {
+    const lines = String(item.content || '').split(/\n+/).map(v => v.trim()).filter(Boolean);
+    let school = lines.find(v => VENUE_ADDRESS_MAP[v]) || '';
+    if (!school) {
+      school = Object.keys(VENUE_ADDRESS_MAP).find(name => String(item.content || '').includes(name)) || '';
+    }
+    const address = lines.find(v => v.includes('충청남도')) || VENUE_ADDRESS_MAP[school] || item.note || '';
+    return { group:item.title || '', school:school || (lines[0] || item.title || ''), address };
+  }
+
+  function renderVenueInfoTable(items) {
+    return `<section class="card"><div class="info-table-wrap"><table class="info-table">
+      <thead><tr><th style="width:18%">구분</th><th>경기장 · 주소</th><th style="width:18%">길찾기</th></tr></thead>
+      <tbody>${items.map(item => {
+        const v = venueInfoData(item);
+        const query = [v.school, v.address].filter(Boolean).join(' ');
+        const url = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
+        return `<tr>
+          <td class="name-cell">${escapeHtml(v.group)}</td>
+          <td class="content-cell"><b>${escapeHtml(v.school)}</b>${v.address ? `<br><span class="note-cell">${escapeHtml(v.address)}</span>` : ''}</td>
+          <td style="text-align:center"><a class="info-action-btn nav-btn" href="${url}" target="_blank" rel="noopener">🧭 길찾기</a></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div></section>`;
+  }
+
+  function renderAffiliateTable(items) {
+    const main = items.find(item => item.contact) || items[0];
+    const reservations = items.filter(item => item !== main);
+    return `<section class="card">
+      <div class="affiliate-summary">
+        <div><strong>${escapeHtml(main.title || '제휴식당')}</strong><small style="white-space:pre-line">${escapeHtml(main.content || '')}</small>${main.note ? `<div class="note-cell" style="margin-top:5px">${escapeHtml(main.note)}</div>` : ''}</div>
+        ${main.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(main.contact)}" data-phone-label="${escapeHtml(main.title || '제휴식당')}">☎ ${escapeHtml(main.contact)}</button>` : ''}
+      </div>
+      <div class="info-table-wrap"><table class="info-table">
+        <thead><tr><th style="width:26%">팀·구분</th><th>예약 내용</th><th style="width:24%">비고</th></tr></thead>
+        <tbody>${reservations.length ? reservations.map(item => `<tr>
+          <td class="name-cell">${escapeHtml(item.title || '')}</td>
+          <td class="content-cell">${escapeHtml(item.content || '')}</td>
+          <td class="note-cell">${escapeHtml(item.note || '')}</td>
+        </tr>`).join('') : `<tr><td colspan="3" class="note-cell">예약 내역은 안내 시트에서 추가할 수 있습니다.</td></tr>`}</tbody>
+      </table></div>
+    </section>`;
+  }
+
+  function renderRestaurantTable(items) {
+    return `<section class="card"><div class="info-table-wrap"><table class="info-table">
+      <thead><tr><th style="width:25%">식당</th><th>메뉴 · 가격</th><th style="width:20%">전화</th><th style="width:25%">비고</th></tr></thead>
+      <tbody>${items.map(item => `<tr>
+        <td class="name-cell">${escapeHtml(item.title || '')}</td>
+        <td class="content-cell">${escapeHtml(item.content || '')}</td>
+        <td style="text-align:center">${item.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(item.contact)}" data-phone-label="${escapeHtml(item.title || '')}">☎ ${escapeHtml(item.contact)}</button>` : '–'}</td>
+        <td class="note-cell">${escapeHtml(item.note || '')}</td>
+      </tr>`).join('')}</tbody>
+    </table></div></section>`;
+  }
+
+  function bindInfoActions() {
+    $$('[data-phone]').forEach(btn => btn.onclick = () => openPhoneAction(btn.dataset.phone, btn.dataset.phoneLabel || '전화번호'));
+  }
+
+  function openPhoneAction(phone, label) {
+    const cleanPhone = String(phone || '').replace(/[^0-9+]/g, '');
+    $('#modalContent').innerHTML = `
+      <div class="modal-head"><div><h3>☎ ${escapeHtml(label)}</h3><p>${escapeHtml(phone)}</p></div><button class="x" id="closeModal">×</button></div>
+      <div class="modal-actions" style="justify-content:center;gap:10px">
+        <a class="button primary" href="tel:${escapeHtml(cleanPhone)}">📞 전화걸기</a>
+        <button class="button line" id="copyPhoneBtn">📋 번호 복사</button>
+        <button class="button line" id="closeModal2">닫기</button>
+      </div>`;
+    showModal();
+    $('#closeModal').onclick = closeModal;
+    $('#closeModal2').onclick = closeModal;
+    $('#copyPhoneBtn').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(phone);
+        toast('전화번호를 복사했습니다.');
+      } catch (e) {
+        const input = document.createElement('textarea');
+        input.value = phone;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+        toast('전화번호를 복사했습니다.');
+      }
+    };
+  }
+
+  function infoCategoryIcon(category) {
+    if (category === '경기규칙') return '🏐';
+    if (category === '경기장 안내') return '🏫';
+    if (category === '경기장 관리자') return '👤';
+    if (category === '제휴식당(예약됨)' || category === '식사 안내') return '🍱';
+    if (category === '식당 안내') return '🍽️';
+    return 'ℹ️';
   }
 
   function bindMatchCards() {
@@ -2197,6 +2472,63 @@
     state.selectedMatchId = null;
   }
 
+  function openTieDecisionModal(groupKey) {
+    if (viewerMode) return;
+    if (!state.adminKey) return openAdminModal();
+    const group = (state.data.standings || []).find(item => item.key === groupKey);
+    if (!group) return toast('조별 순위 정보를 찾지 못했습니다.');
+    if (!group.complete) return toast('동전 던지기는 해당 조의 예선이 모두 끝난 뒤에만 사용할 수 있습니다.');
+    const pendingRows = (group.rows || []).filter(row => row.tiePending);
+    if (pendingRows.length < 2) return toast('동전 던지기가 필요한 완전 동률 팀이 없습니다.');
+
+    $('#modalContent').innerHTML = `
+      <div class="modal-head">
+        <div><h3>🪙 ${escapeHtml(group.label)} 동전 던지기</h3><p>앞선 기준과 승자승으로도 순위가 정해지지 않은 팀만 표시됩니다. 동전 던지기 결과 순번을 입력하세요.</p></div>
+        <button class="x" id="closeModal">×</button>
+      </div>
+      <div class="score-panel">
+        ${pendingRows.map(row => `<label class="field-label" style="display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center;margin:8px 0">
+          <span>${escapeHtml(row.team)}</span>
+          <input class="text-input tie-input" style="padding:9px;text-align:center" type="number" min="1" inputmode="numeric" data-tie-team="${escapeHtml(row.team)}" value="${escapeHtml(row.tieDecision || '')}" placeholder="순번">
+        </label>`).join('')}
+      </div>
+      <p class="login-note">예: 동전 던지기 1위 팀은 1, 다음 팀은 2. 필요 없는 팀은 빈칸으로 두세요.</p>
+      <div class="modal-actions">
+        <button class="button line" id="clearTieBtn">모두 지우기</button>
+        <button class="button line" id="closeModal2">닫기</button>
+        <button class="button primary" id="saveTieBtn">저장</button>
+      </div>`;
+    showModal();
+    $('#closeModal').onclick = closeModal;
+    $('#closeModal2').onclick = closeModal;
+    $('#clearTieBtn').onclick = () => $$('.tie-input').forEach(input => input.value = '');
+    $('#saveTieBtn').onclick = () => saveTieDecisions(group);
+  }
+
+  async function saveTieDecisions(group) {
+    const entries = $$('.tie-input').map(input => ({team:input.dataset.tieTeam, value:input.value.trim()}));
+    const button = $('#saveTieBtn');
+    if (button) { button.disabled = true; button.textContent = '저장 중…'; }
+    try {
+      const result = await api({
+        action:'saveTieDecisions',
+        adminKey:state.adminKey,
+        division:group.division,
+        group:group.group,
+        entries:JSON.stringify(entries)
+      });
+      if (!result?.ok) throw new Error(result?.error || '동점 판정을 저장하지 못했습니다.');
+      state.data = result;
+      closeModal();
+      syncHero();
+      renderStandings();
+      toast('동점 판정을 저장했습니다.');
+    } catch (error) {
+      toast(error.message);
+      if (button) { button.disabled = false; button.textContent = '저장'; }
+    }
+  }
+
   async function syncNow() {
     if (!state.adminKey) return openAdminModal();
     const button = $('#syncBtn');
@@ -2207,7 +2539,7 @@
       state.data = result;
       syncHero();
       render();
-      toast('시트·순위·토너먼트를 갱신했습니다.');
+      toast('경기·순위·토너먼트를 갱신했습니다.');
     } catch (error) {
       toast(error.message);
       if (button) { button.disabled = false; button.textContent = '↻ 시트 전체 갱신'; }
@@ -2218,7 +2550,7 @@
     if (viewerMode) return toast('관전자 화면에서는 관리자 인증을 사용할 수 없습니다.');
     $('#modalContent').innerHTML = `
       <div class="modal-head"><div><h3>관리자 인증</h3><p>점수 입력과 전체 갱신을 위한 관리자 키입니다.</p></div><button class="x" id="closeModal">×</button></div>
-      <p class="login-note">Code.gs 상단의 <b>ADMIN_KEY</b>에 설정한 값을 입력하세요. 이 브라우저에만 저장됩니다.</p>
+      <p class="login-note">관리자 비밀번호를 입력하세요. 이 브라우저에만 저장됩니다.</p>
       <label class="field-label" for="adminKeyInput">관리자 키</label>
       <input class="text-input" id="adminKeyInput" type="password" placeholder="관리자 키 입력" value="${escapeHtml(state.adminKey)}" autocomplete="current-password">
       <div class="modal-actions">
