@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1196,8 +1194,15 @@
       background:#f8fcf9;
     }
 
+  
+    /* 4강 연결선은 두 4강 카드의 세로 연결선 중심에서 정확히 끝남 */
+    .bracket-row.semi-row::before {
+      left:150px !important;
+      right:150px !important;
+    }
+
   </style>
-<meta name="app-build" content="0815-live-score-keep-open">
+<meta name="app-build" content="0815-fastscore-semiline">
 </head>
 <body>
   <div class="app">
@@ -2653,19 +2658,68 @@
     try {
       const result = await api(payload);
       if (!result?.ok) throw new Error(result?.error || '저장하지 못했습니다.');
-      state.data = result;
+
+      if (result.partial && result.match) {
+        // 경기 진행 중: 전체 데이터를 다시 받지 않고 현재 경기만 즉시 교체
+        applySavedMatchPatch(result.match, result.updatedAt);
+      } else {
+        // 경기 종료: 서버에서 순위·토너먼트까지 재계산한 전체 데이터를 받음
+        state.data = result;
+      }
+
       syncHero();
 
-      // 배경의 대시보드/경기현황은 최신 점수로 다시 그리되,
-      // 점수 입력창은 닫지 않는다. 계속 점수를 입력해서 즉시 반영할 수 있다.
+      // 배경 화면은 최신 점수로 다시 그리되 입력창은 계속 열어 둔다.
       render();
       updateMatchPreview();
       setModalBusy(false, '점수 반영');
-      toast('점수를 반영했습니다. 계속 입력할 수 있습니다.');
+      toast(result.partial
+        ? '점수를 빠르게 반영했습니다. 계속 입력할 수 있습니다.'
+        : '경기 종료 결과와 순위·토너먼트를 반영했습니다.');
     } catch (error) {
       toast(error.message);
       setModalBusy(false, '점수 반영');
     }
+  }
+
+  function applySavedMatchPatch(updatedMatch, updatedAt) {
+    if (!state.data || !updatedMatch) return;
+
+    const replaceMatch = match =>
+      match && match.id === updatedMatch.id
+        ? {...match, ...updatedMatch}
+        : match;
+
+    state.data.allMatches = (state.data.allMatches || []).map(replaceMatch);
+
+    state.data.liveMatches = (state.data.allMatches || []).filter(match =>
+      match.status === '예정' || match.status === '진행중'
+    );
+
+    const all = state.data.allMatches || [];
+    state.data.summary = {
+      ...(state.data.summary || {}),
+      total: all.length,
+      live: all.filter(match => match.status === '진행중').length,
+      finished: all.filter(match => match.status === '종료').length,
+      remaining: all.filter(match => match.status === '예정' || match.status === '대기').length
+    };
+
+    // 토너먼트 경기 진행 중이면 토너먼트 카드 상태도 즉시 갱신
+    Object.values(state.data.tournament || {}).forEach(division => {
+      Object.values(division || {}).forEach(round => {
+        const index = round.findIndex(match => match.id === updatedMatch.id);
+        if (index >= 0) {
+          round[index] = {
+            ...round[index],
+            winner: updatedMatch.winner || '',
+            status: updatedMatch.status
+          };
+        }
+      });
+    });
+
+    if (updatedAt) state.data.updatedAt = updatedAt;
   }
 
   function valueOrBlank(v) {
