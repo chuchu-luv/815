@@ -619,7 +619,7 @@
 
     /* 대진표: CSS가 일부 적용되지 않아도 형태가 깨지지 않도록 구성 */
     .bracket-board-wrap { overflow-x:auto; padding:8px 0 20px; }
-    .bracket-board { min-width:920px; padding:8px 16px 32px; }
+    .bracket-board { min-width:1180px; padding:8px 16px 32px; }
     .bracket-winner {
       width:240px; margin:0 auto; padding:10px 14px; text-align:center;
       border:2px solid #df6b74; border-radius:15px;
@@ -679,7 +679,7 @@
     }
     .bracket-round-name { text-align:center; margin:0 0 8px; color:#5c7869; font-size:12px; font-weight:950; }
     @media (max-width: 680px) {
-      .bracket-board { min-width:920px; }
+      .bracket-board { min-width:1180px; }
     }
 
   
@@ -1167,8 +1167,37 @@
       outline-offset:3px;
     }
 
+  
+    /* 8강은 각 4강 아래에 2경기씩 묶어서 배치 */
+    .bracket-row.quarter-pairs {
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:260px;
+      margin-top:42px;
+    }
+    .quarter-pair {
+      display:grid;
+      grid-template-columns:repeat(2,210px);
+      justify-content:space-between;
+      gap:28px;
+      position:relative;
+    }
+    .quarter-pair::before {
+      content:"";
+      position:absolute;
+      left:105px;
+      right:105px;
+      top:-13px;
+      height:3px;
+      background:#b7d2c0;
+      border-radius:999px;
+    }
+    .tournament-time-editor {
+      margin-top:12px;
+      background:#f8fcf9;
+    }
+
   </style>
-<meta name="app-build" content="0815-home-logo">
+<meta name="app-build" content="0815-live-score-keep-open">
 </head>
 <body>
   <div class="app">
@@ -1217,7 +1246,7 @@
       <button class="tab" data-page="standings">조별 순위</button>
       <button class="tab" data-page="tournament">토너먼트</button>
       <button class="tab" data-page="guide-game">경기 안내</button>
-      <button class="tab" data-page="guide-etc">기타 안내</button>
+      <button class="tab" data-page="guide-etc">점심 안내</button>
     </nav>
 
     <main id="main">
@@ -2040,8 +2069,13 @@
       ${sf.map(match => `<div class="bracket-slot"><p class="bracket-round-name">4강</p>${pyramidMatchCard(match)}</div>`).join('')}
     </div>` : '';
 
-    const qfHtml = qf.length ? `<div class="bracket-row quarter-row">
-      ${qf.map(match => `<div class="bracket-slot"><p class="bracket-round-name">8강</p>${pyramidMatchCard(match)}</div>`).join('')}
+    const qfHtml = qf.length ? `<div class="bracket-row quarter-pairs">
+      <div class="quarter-pair">
+        ${qf.slice(0,2).map(match => `<div class="bracket-slot"><p class="bracket-round-name">8강</p>${pyramidMatchCard(match)}</div>`).join('')}
+      </div>
+      <div class="quarter-pair">
+        ${qf.slice(2,4).map(match => `<div class="bracket-slot"><p class="bracket-round-name">8강</p>${pyramidMatchCard(match)}</div>`).join('')}
+      </div>
     </div>` : '';
 
     return `<div class="bracket-board-wrap"><div class="bracket-board">
@@ -2198,7 +2232,7 @@
     }
 
     const visible = modeInfo.filter(item => item.category === state.infoFilter);
-    const title = mode === 'game' ? '경기 안내' : '기타 안내';
+    const title = mode === 'game' ? '경기 안내' : '점심 안내';
     const subtitle = mode === 'game'
       ? '경기규칙·경기장·경기장 관리자 정보를 확인하세요.'
       : '제휴식당 예약과 주변 식당 정보를 확인하세요.';
@@ -2406,6 +2440,62 @@
     };
   }
 
+  function tournamentTimeEditorHtml(matchId, datetime, canEdit) {
+    if (!canEdit) return '';
+
+    return `<div class="score-panel tournament-time-editor">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div>
+          <b style="font-size:14px">⏱ 토너먼트 경기시간</b>
+          <div style="margin-top:3px;color:var(--muted);font-size:11px;font-weight:750">예: 13:00 / 8강 종료 후 / 4강 종료 후</div>
+        </div>
+        <button class="button soft" id="saveTournamentTimeBtn">시간 저장</button>
+      </div>
+      <input class="text-input" id="tournamentTimeInput"
+        style="margin-top:9px"
+        maxlength="40"
+        value="${escapeHtml(text(datetime,''))}"
+        placeholder="경기시간 또는 안내 문구">
+      <input type="hidden" id="tournamentTimeMatchId" value="${escapeHtml(matchId)}">
+    </div>`;
+  }
+
+  async function saveTournamentTimeFromModal(matchId) {
+    if (!state.adminKey) return openAdminModal();
+
+    const input = $('#tournamentTimeInput');
+    const value = input ? input.value.trim() : '';
+
+    const button = $('#saveTournamentTimeBtn');
+    if (button) {
+      button.disabled = true;
+      button.textContent = '저장 중…';
+    }
+
+    try {
+      const result = await api({
+        action:'saveTournamentTime',
+        adminKey:state.adminKey,
+        id:matchId,
+        datetime:value
+      });
+
+      if (!result?.ok) throw new Error(result?.error || '경기시간을 저장하지 못했습니다.');
+
+      state.data = result;
+      syncHero();
+      closeModal();
+      render();
+      toast('토너먼트 경기시간을 저장했습니다.');
+    } catch (error) {
+      toast(error.message || '경기시간 저장에 실패했습니다.');
+      if (button) {
+        button.disabled = false;
+        button.textContent = '시간 저장';
+      }
+    }
+  }
+
   function openMatch(matchId) {
     const match = getMatch(matchId);
     if (!match) {
@@ -2428,6 +2518,7 @@
         <div class="info-box"><small>승리 팀</small><b id="modalWinner">${match.winner ? '🏆 ' + escapeHtml(match.winner) + ' 승리' : '미확정'}</b></div>
         <div class="info-box"><small>${displayMeta.stage === '토너먼트' ? '세트 결과' : '승점'}</small><b id="modalPoints">${displayMeta.stage === '토너먼트' ? tournamentSetResultHtml(match) : pointDetailHtml(match.teamA, match.pointsA, match.teamB, match.pointsB)}</b></div>
       </div>
+      ${displayMeta.stage === '토너먼트' ? tournamentTimeEditorHtml(match.id, displayMeta.datetime, canEdit) : ''}
       <div class="score-panel">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
           <b style="font-size:15px">${canEdit ? '세트 점수 입력' : '세트별 점수'}</b>
@@ -2442,7 +2533,7 @@
       <div class="modal-actions">
         ${canEdit && match.status !== '예정' ? `<button class="button danger" id="resetMatchBtn">결과 초기화</button>` : ''}
         <button class="button line" id="closeModal2">닫기</button>
-        ${canEdit ? `<button class="button primary" id="saveScoreBtn">점수 저장</button>` : ''}
+        ${canEdit ? `<button class="button primary" id="saveScoreBtn">점수 반영</button>` : ''}
       </div>`;
     showModal();
     $('#closeModal').onclick = closeModal;
@@ -2450,6 +2541,7 @@
     $$('.score-input', $('#modalContent')).forEach(input => input.addEventListener('input', updateMatchPreview));
     $('#saveScoreBtn')?.addEventListener('click', saveMatch);
     $('#resetMatchBtn')?.addEventListener('click', resetMatch);
+    $('#saveTournamentTimeBtn')?.addEventListener('click', () => saveTournamentTimeFromModal(match.id));
     updateMatchPreview();
   }
 
@@ -2563,12 +2655,16 @@
       if (!result?.ok) throw new Error(result?.error || '저장하지 못했습니다.');
       state.data = result;
       syncHero();
-      closeModal();
+
+      // 배경의 대시보드/경기현황은 최신 점수로 다시 그리되,
+      // 점수 입력창은 닫지 않는다. 계속 점수를 입력해서 즉시 반영할 수 있다.
       render();
-      toast('경기 결과를 저장하고 순위를 갱신했습니다.');
+      updateMatchPreview();
+      setModalBusy(false, '점수 반영');
+      toast('점수를 반영했습니다. 계속 입력할 수 있습니다.');
     } catch (error) {
       toast(error.message);
-      setModalBusy(false, '점수 저장');
+      setModalBusy(false, '점수 반영');
     }
   }
 
@@ -2598,7 +2694,7 @@
   function setModalBusy(disabled, label) {
     const save = $('#saveScoreBtn');
     const reset = $('#resetMatchBtn');
-    if (save) { save.disabled = disabled; save.textContent = label || '점수 저장'; }
+    if (save) { save.disabled = disabled; save.textContent = label || '점수 반영'; }
     if (reset) reset.disabled = disabled;
   }
 
@@ -2613,16 +2709,19 @@
   }
 
   function openTournamentPreview(match) {
+    const canEdit = !viewerMode && !!state.adminKey;
     $('#modalContent').innerHTML = `
       <div class="modal-head"><div><h3>${escapeHtml(match.teamA || '진출팀 대기')} VS ${escapeHtml(match.teamB || '진출팀 대기')}</h3>
       <p>${escapeHtml(match.round)} · 🏫 ${escapeHtml(shortVenueLabel(text(match.venue,'')))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
       <button class="x" id="closeModal">×</button></div>
       <div class="card" style="box-shadow:none;background:#f7fff9"><b>현재 상태: ${escapeHtml(statusLabel(match.status))}</b>
       <p style="margin:9px 0 0;color:var(--muted);font-size:13px;font-weight:700">예선 순위와 앞 경기 승자가 확정되면 실제 팀명이 자동으로 표시됩니다.</p></div>
+      ${tournamentTimeEditorHtml(match.id, match.datetime, canEdit)}
       <div class="modal-actions"><button class="button line" id="closeModal2">닫기</button></div>`;
     showModal();
     $('#closeModal').onclick = closeModal;
     $('#closeModal2').onclick = closeModal;
+    $('#saveTournamentTimeBtn')?.addEventListener('click', () => saveTournamentTimeFromModal(match.id));
   }
 
   function showModal() {
