@@ -1672,7 +1672,7 @@
           <span class="team right ${match.winner === match.teamB ? 'winner-team' : ''}">${escapeHtml(text(match.teamB,''))}</span>
         </div>
         <div class="match-bottom">
-          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(text(match.venue,''))}</span>
+          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(shortVenueLabel(text(match.venue,'')))}</span>
           <span>⏱ ${escapeHtml(text(match.datetime,''))}</span>
           <span class="scoreline" style="color:${palette.accent}">${escapeHtml(resultText)}</span>
         </div>
@@ -1695,7 +1695,7 @@
           <span class="team right ${match.winner === match.teamB ? 'winner-team' : ''}">${escapeHtml(text(match.teamB,''))}</span>
         </div>
         <div class="match-bottom">
-          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(text(match.venue,''))}</span>
+          <span class="venue-chip ${gymClass}">🏫 ${escapeHtml(shortVenueLabel(text(match.venue,'')))}</span>
           <span>⏱ ${escapeHtml(text(match.datetime,''))}</span>
           <span class="scoreline" style="color:${palette.accent}">${escapeHtml(match.winner ? resultLine(match) : '경기 운영으로 ›')}</span>
         </div>
@@ -1871,7 +1871,7 @@
         ${filters.map(f => `<button class="subtab ${state.matchFilter===f?'active':''} ${f==='남자'?'division-mens':f==='여자'?'division-womens':f==='혼성'?'division-mixed':''}" data-match-filter="${escapeHtml(f)}">${escapeHtml(f)}</button>`).join('')}
       </div>
       <div class="subtabs" style="margin-top:-6px">
-        ${venueFilters.map(v => `<button class="subtab ${state.matchVenueFilter===v?'active':''}" data-match-venue-filter="${escapeHtml(v)}">${escapeHtml(v)}</button>`).join('')}
+        ${venueFilters.map(v => `<button class="subtab ${state.matchVenueFilter===v?'active':''}" data-match-venue-filter="${escapeHtml(v)}" title="${escapeHtml(v)}">${escapeHtml(shortVenueLabel(v))}</button>`).join('')}
       </div>
       <div class="grid three">
         ${list.length ? list.map(matchCard).join('') : '<div class="empty">조건에 맞는 경기가 없습니다.</div>'}
@@ -2070,7 +2070,7 @@
           ${bWin ? '<span class="bracket-check">✓</span>' : ''}
         </div>
       </div>
-      <div class="bracket-meta"><span>🏫 ${escapeHtml(text(match.venue,''))}</span><span>⏱ ${escapeHtml(text(match.datetime,''))}</span></div>
+      <div class="bracket-meta"><span>🏫 ${escapeHtml(shortVenueLabel(text(match.venue,'')))}</span><span>⏱ ${escapeHtml(text(match.datetime,''))}</span></div>
     </button>`;
   }
 
@@ -2419,7 +2419,7 @@
     $('#modalContent').innerHTML = `
       <div class="modal-head">
         <div><h3>${escapeHtml(match.teamA)} <span style="color:#95a89e;font-size:14px">VS</span> ${escapeHtml(match.teamB)}</h3>
-        <p>${escapeHtml(displayMeta.stage)} · ${escapeHtml(displayMeta.division)}${displayMeta.group ? ' '+escapeHtml(displayMeta.group)+'조' : ''}${displayMeta.sequence ? ' · '+escapeHtml(displayMeta.sequence) : ''} · 🏫 ${escapeHtml(text(displayMeta.venue,''))} · ⏱ ${escapeHtml(text(displayMeta.datetime,''))}${displayMeta.note ? ' · '+escapeHtml(displayMeta.note) : ''}</p></div>
+        <p>${escapeHtml(displayMeta.stage)} · ${escapeHtml(displayMeta.division)}${displayMeta.group ? ' '+escapeHtml(displayMeta.group)+'조' : ''}${displayMeta.sequence ? ' · '+escapeHtml(displayMeta.sequence) : ''} · 🏫 ${escapeHtml(shortVenueLabel(text(displayMeta.venue,'')))} · ⏱ ${escapeHtml(text(displayMeta.datetime,''))}${displayMeta.note ? ' · '+escapeHtml(displayMeta.note) : ''}</p></div>
         <button class="x" id="closeModal">×</button>
       </div>
       ${matchOutcomeHtml(match)}
@@ -2615,7 +2615,7 @@
   function openTournamentPreview(match) {
     $('#modalContent').innerHTML = `
       <div class="modal-head"><div><h3>${escapeHtml(match.teamA || '진출팀 대기')} VS ${escapeHtml(match.teamB || '진출팀 대기')}</h3>
-      <p>${escapeHtml(match.round)} · 🏫 ${escapeHtml(text(match.venue,''))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
+      <p>${escapeHtml(match.round)} · 🏫 ${escapeHtml(shortVenueLabel(text(match.venue,'')))} · ⏱ ${escapeHtml(text(match.datetime,''))}</p></div>
       <button class="x" id="closeModal">×</button></div>
       <div class="card" style="box-shadow:none;background:#f7fff9"><b>현재 상태: ${escapeHtml(statusLabel(match.status))}</b>
       <p style="margin:9px 0 0;color:var(--muted);font-size:13px;font-weight:700">예선 순위와 앞 경기 승자가 확정되면 실제 팀명이 자동으로 표시됩니다.</p></div>
