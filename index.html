@@ -2294,7 +2294,7 @@
     const info = rawInfo.map(item => Object.assign({}, item, { category: normalizeInfoCategory(item.category) }));
     state.infoMode = mode;
 
-    const gameCategories = ['🏐경기규칙', '🚩경기장 안내', '🅿️주차 안내', '🦺경기장 관리자'];
+    const gameCategories = ['경기규칙', '경기장 안내', '주차 안내', '경기장 관리자'];
     const gameSet = new Set(gameCategories);
 
     const modeInfo = mode === 'game'
