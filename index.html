@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1143,7 +1142,7 @@
 
 <script>
 (() => {
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxjG_MmJ9t8MaipbVJbhC_W0L-ov53bW40rWBeJRKcV0DATIcIz269v1Q-nExgJ_Bbx/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbx73EKswpYBkL9XmHilXkVVUfPWzLerL9ZY6qNcdrnLeYBT-_1LTZabeHTJ0wMAkPbK/exec';
   const pageParams = new URLSearchParams(location.search);
   const viewerValue = String(pageParams.get('viewer') || pageParams.get('mode') || pageParams.get('view') || '').toLowerCase();
   const viewerMode = ['1', 'true', 'yes', 'viewer', 'public'].includes(viewerValue);
@@ -2134,13 +2133,40 @@
     </table></div></section>`;
   }
 
+  function affiliateAddress(item) {
+    const combined = [item?.content, item?.note].filter(Boolean).join('\n');
+    const lines = combined.split(/\n+/).map(v => v.trim()).filter(Boolean);
+    const explicit = lines.find(v => /^주소\s*[:：]/.test(v));
+    if (explicit) return explicit.replace(/^주소\s*[:：]\s*/, '').trim();
+
+    const koreanAddress = lines.find(v => /(?:충청남도|충남)\s+/.test(v));
+    if (koreanAddress) return koreanAddress.trim();
+
+    if (String(item?.title || '').includes('낙원숯불갈비')) {
+      return '충남 예산군 삽교읍 청사로192번길 20';
+    }
+    return '';
+  }
+
   function renderAffiliateTable(items) {
     const main = items.find(item => item.contact) || items[0];
     const reservations = items.filter(item => item !== main);
+    const address = affiliateAddress(main);
+    const navQuery = [main.title || '낙원숯불갈비', address].filter(Boolean).join(' ');
+    const navUrl = `https://map.kakao.com/link/search/${encodeURIComponent(navQuery)}`;
+
     return `<section class="card">
       <div class="affiliate-summary">
-        <div><strong>${escapeHtml(main.title || '제휴식당')}</strong><small style="white-space:pre-line">${escapeHtml(main.content || '')}</small>${main.note ? `<div class="note-cell" style="margin-top:5px">${escapeHtml(main.note)}</div>` : ''}</div>
-        ${main.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(main.contact)}" data-phone-label="${escapeHtml(main.title || '제휴식당')}">☎ ${escapeHtml(main.contact)}</button>` : ''}
+        <div>
+          <strong>${escapeHtml(main.title || '제휴식당')}</strong>
+          <small style="white-space:pre-line">${escapeHtml(main.content || '')}</small>
+          ${address ? `<div class="note-cell" style="margin-top:5px">📍 ${escapeHtml(address)}</div>` : ''}
+          ${main.note ? `<div class="note-cell" style="margin-top:5px">${escapeHtml(main.note)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          ${main.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(main.contact)}" data-phone-label="${escapeHtml(main.title || '제휴식당')}">☎ ${escapeHtml(main.contact)}</button>` : ''}
+          ${address ? `<a class="info-action-btn nav-btn" href="${navUrl}" target="_blank" rel="noopener">🧭 길찾기</a>` : ''}
+        </div>
       </div>
       <div class="info-table-wrap"><table class="info-table">
         <thead><tr><th style="width:26%">팀·구분</th><th>예약 내용</th><th style="width:24%">비고</th></tr></thead>
