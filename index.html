@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1063,7 +1064,8 @@
     .info-table .note-cell{color:var(--muted);font-size:12px;font-weight:700}
     .info-action-btn{border:1px solid #cfe6d7;background:#f6fcf8;color:#0b6d3b;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
     .info-action-btn:hover{background:#eaf8ef}
-    .phone-btn{display:inline-flex;align-items:center;gap:5px}
+    .phone-btn{display:inline-grid;place-items:center;gap:0}
+    .phone-icon-btn{width:34px;height:34px;padding:0;border-radius:50%;font-size:17px;line-height:1}
     .nav-btn{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
     .affiliate-summary{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 15px;margin-bottom:10px;border:1px solid #cfe6d7;border-radius:15px;background:#f7fcf8}
     .affiliate-summary strong{display:block;font-size:15px;margin-bottom:4px}
@@ -1073,6 +1075,7 @@
       .info-table th,.info-table td{padding:9px 6px;font-size:11px;word-break:keep-all}
       .info-table .note-cell{font-size:10px}
       .info-action-btn{padding:6px 7px;font-size:11px}
+      .phone-icon-btn{width:31px;height:31px;padding:0;font-size:15px}
       .affiliate-summary{grid-template-columns:1fr;padding:12px}
     }
 
@@ -1158,13 +1161,14 @@
     tournamentFilter: '남자',
     infoMode: 'game',
     infoFilter: '경기규칙',
-    adminKey: localStorage.getItem('gnueVolleyAdminKey') || '',
+    adminKey: sessionStorage.getItem('gnueVolleyAdminKey') || '',
     selectedMatchId: null,
     loading: false
   };
 
   if (viewerMode) {
     document.body.classList.add('viewer-mode');
+    state.adminKey = '';
   }
 
   const $ = (selector, root=document) => root.querySelector(selector);
@@ -1945,13 +1949,12 @@
   function openNoticeModal() {
     const notices = (state.data?.notices || []).slice().sort((a, b) => Number(a.order || 9999) - Number(b.order || 9999));
     const canManage = !viewerMode && !!state.adminKey;
-    const needsAuth = !viewerMode && !state.adminKey;
 
     $('#modalContent').innerHTML = `
       <div class="modal-head">
         <div>
           <h3>🔔 ${canManage ? '공지사항 관리' : '공지사항'}</h3>
-          <p>${canManage ? '여기서 추가·삭제하면 관전자 화면에 바로 반영됩니다.' : '대회 공지사항입니다.'}</p>
+          <p>${canManage ? '공지사항을 추가하거나 삭제할 수 있습니다.' : '대회 공지사항입니다.'}</p>
         </div>
         <button class="x" id="closeModal">×</button>
       </div>
@@ -1972,19 +1975,17 @@
           </div>
         </div>` : ''}
       <div class="modal-actions">
-        ${needsAuth ? '<button class="button primary" id="noticeLoginBtn">🔐 관리자 인증 후 추가</button>' : ''}
         <button class="button line" id="closeModal2">닫기</button>
       </div>`;
 
     showModal();
     $('#closeModal').onclick = closeModal;
     $('#closeModal2').onclick = closeModal;
-    $('#noticeLoginBtn')?.addEventListener('click', openAdminModal);
     $('#addNoticeBtn')?.addEventListener('click', addNoticeFromModal);
     $$('[data-delete-notice]').forEach(btn => {
       btn.onclick = () => deleteNoticeFromModal(btn.dataset.deleteNotice);
     });
-    setTimeout(() => $('#newNoticeInput')?.focus(), 80);
+    if (canManage) setTimeout(() => $('#newNoticeInput')?.focus(), 80);
   }
 
   async function addNoticeFromModal() {
@@ -2122,8 +2123,10 @@
       <thead><tr><th style="width:18%">구분</th><th>경기장 · 주소</th><th style="width:18%">길찾기</th></tr></thead>
       <tbody>${items.map(item => {
         const v = venueInfoData(item);
-        const query = [v.school, v.address].filter(Boolean).join(' ');
-        const url = `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
+        const query = v.address || v.school;
+        const url = v.school === '홍주초등학교'
+          ? `https://map.naver.com/p/search/${encodeURIComponent(query)}`
+          : `https://map.kakao.com/link/search/${encodeURIComponent(query)}`;
         return `<tr>
           <td class="name-cell">${escapeHtml(v.group)}</td>
           <td class="content-cell"><b>${escapeHtml(v.school)}</b>${v.address ? `<br><span class="note-cell">${escapeHtml(v.address)}</span>` : ''}</td>
@@ -2152,19 +2155,24 @@
     const main = items.find(item => item.contact) || items[0];
     const reservations = items.filter(item => item !== main);
     const address = affiliateAddress(main);
-    const navQuery = [main.title || '낙원숯불갈비', address].filter(Boolean).join(' ');
+    const navQuery = address || main.title || '낙원숯불갈비';
     const navUrl = `https://map.kakao.com/link/search/${encodeURIComponent(navQuery)}`;
+    const displayContent = String(main.content || '')
+      .split(/\n+/)
+      .filter(line => !/^주소\s*[:：]/.test(line.trim()))
+      .join('\n')
+      .trim();
 
     return `<section class="card">
       <div class="affiliate-summary">
         <div>
           <strong>${escapeHtml(main.title || '제휴식당')}</strong>
-          <small style="white-space:pre-line">${escapeHtml(main.content || '')}</small>
+          <small style="white-space:pre-line">${escapeHtml(displayContent)}</small>
           ${address ? `<div class="note-cell" style="margin-top:5px">📍 ${escapeHtml(address)}</div>` : ''}
           ${main.note ? `<div class="note-cell" style="margin-top:5px">${escapeHtml(main.note)}</div>` : ''}
         </div>
         <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-          ${main.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(main.contact)}" data-phone-label="${escapeHtml(main.title || '제휴식당')}">☎ ${escapeHtml(main.contact)}</button>` : ''}
+          ${main.contact ? `<button class="info-action-btn phone-btn phone-icon-btn" type="button" title="${escapeHtml(main.contact)}" aria-label="${escapeHtml(main.title || '제휴식당')} 전화 ${escapeHtml(main.contact)}" data-phone="${escapeHtml(main.contact)}" data-phone-label="${escapeHtml(main.title || '제휴식당')}">☎</button>` : ''}
           ${address ? `<a class="info-action-btn nav-btn" href="${navUrl}" target="_blank" rel="noopener">🧭 길찾기</a>` : ''}
         </div>
       </div>
@@ -2181,11 +2189,11 @@
 
   function renderRestaurantTable(items) {
     return `<section class="card"><div class="info-table-wrap"><table class="info-table">
-      <thead><tr><th style="width:25%">식당</th><th>메뉴 · 가격</th><th style="width:20%">전화</th><th style="width:25%">비고</th></tr></thead>
+      <thead><tr><th style="width:27%">식당</th><th style="width:38%">메뉴 · 가격</th><th style="width:10%">전화</th><th style="width:25%">비고</th></tr></thead>
       <tbody>${items.map(item => `<tr>
         <td class="name-cell">${escapeHtml(item.title || '')}</td>
         <td class="content-cell">${escapeHtml(item.content || '')}</td>
-        <td style="text-align:center">${item.contact ? `<button class="info-action-btn phone-btn" data-phone="${escapeHtml(item.contact)}" data-phone-label="${escapeHtml(item.title || '')}">☎ ${escapeHtml(item.contact)}</button>` : '–'}</td>
+        <td style="text-align:center">${item.contact ? `<button class="info-action-btn phone-btn phone-icon-btn" type="button" title="${escapeHtml(item.contact)}" aria-label="${escapeHtml(item.title || '식당')} 전화 ${escapeHtml(item.contact)}" data-phone="${escapeHtml(item.contact)}" data-phone-label="${escapeHtml(item.title || '')}">☎</button>` : '–'}</td>
         <td class="note-cell">${escapeHtml(item.note || '')}</td>
       </tr>`).join('')}</tbody>
     </table></div></section>`;
@@ -2576,7 +2584,7 @@
     if (viewerMode) return toast('관전자 화면에서는 관리자 인증을 사용할 수 없습니다.');
     $('#modalContent').innerHTML = `
       <div class="modal-head"><div><h3>관리자 인증</h3><p>점수 입력과 전체 갱신을 위한 관리자 키입니다.</p></div><button class="x" id="closeModal">×</button></div>
-      <p class="login-note">관리자 비밀번호를 입력하세요. 이 브라우저에만 저장됩니다.</p>
+      <p class="login-note">관리자 비밀번호를 입력하세요. 인증은 현재 탭에서만 유지됩니다.</p>
       <label class="field-label" for="adminKeyInput">관리자 키</label>
       <input class="text-input" id="adminKeyInput" type="password" placeholder="관리자 키 입력" value="${escapeHtml(state.adminKey)}" autocomplete="current-password">
       <div class="modal-actions">
@@ -2587,18 +2595,32 @@
     showModal();
     $('#closeModal').onclick = closeModal;
     $('#closeModal2').onclick = closeModal;
-    $('#saveAdminKey').onclick = () => {
+    $('#saveAdminKey').onclick = async () => {
       const key = $('#adminKeyInput').value.trim();
       if (!key) return toast('관리자 키를 입력하세요.');
-      state.adminKey = key;
-      localStorage.setItem('gnueVolleyAdminKey', key);
-      syncHero();
-      closeModal();
-      toast('관리자 키를 저장했습니다.');
+
+      const button = $('#saveAdminKey');
+      button.disabled = true;
+      button.textContent = '확인 중...';
+
+      try {
+        const result = await api({action:'checkAdmin', adminKey:key});
+        if (!result?.ok) throw new Error(result?.error || '관리자 비밀번호가 올바르지 않습니다.');
+
+        state.adminKey = key;
+        sessionStorage.setItem('gnueVolleyAdminKey', key);
+        syncHero();
+        closeModal();
+        toast('관리자 인증이 완료되었습니다.');
+      } catch (error) {
+        toast(error.message || '관리자 인증에 실패했습니다.');
+        button.disabled = false;
+        button.textContent = '인증하기';
+      }
     };
     $('#logoutBtn')?.addEventListener('click', () => {
       state.adminKey = '';
-      localStorage.removeItem('gnueVolleyAdminKey');
+      sessionStorage.removeItem('gnueVolleyAdminKey');
       syncHero();
       closeModal();
       toast('관리자 인증을 해제했습니다.');
