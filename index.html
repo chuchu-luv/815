@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -217,6 +219,14 @@
     .rule-list li { border-left:4px solid var(--green); padding:10px 12px; background:#fbfffc; border-radius:0 10px 10px 0; }
     .rule-list b { display:block; margin-bottom:4px; }
     .footer { margin-top:28px; text-align:center; color:#8ba094; font-size:12px; font-weight:700; }
+
+    .footer span {
+      display:block;
+      margin-top:3px;
+      font-size:10px;
+      font-weight:400;
+    }
+
     .overlay {
       position:fixed; inset:0; z-index:50; background:rgba(13,31,21,.45); backdrop-filter:blur(4px); display:none;
       align-items:flex-end; justify-content:center; padding:16px;
@@ -1204,8 +1214,73 @@
       right:150px !important;
     }
 
+  
+
+
+    /* 토너먼트 전체 폭 축소: 좌우 가지 자체를 안쪽으로 모음 */
+    .bracket-board {
+      width:780px !important;
+      min-width:780px !important;
+      max-width:780px !important;
+      margin:0 auto !important;
+      padding-left:10px !important;
+      padding-right:10px !important;
+      box-sizing:border-box;
+    }
+
+    .bracket-row.final-row {
+      grid-template-columns:300px !important;
+    }
+
+    .bracket-row.semi-row {
+      width:610px !important;
+      grid-template-columns:repeat(2,230px) !important;
+      gap:150px !important;
+      justify-content:start !important;
+      margin-left:auto !important;
+      margin-right:auto !important;
+    }
+
+    .bracket-row.semi-row::before {
+      left:115px !important;
+      right:115px !important;
+    }
+
+    .bracket-row.quarter-pairs {
+      width:740px !important;
+      grid-template-columns:repeat(2,360px) !important;
+      gap:20px !important;
+      margin-left:auto !important;
+      margin-right:auto !important;
+    }
+
+    .quarter-pair {
+      width:360px !important;
+      grid-template-columns:repeat(2,175px) !important;
+      gap:10px !important;
+      justify-content:start !important;
+    }
+
+    .quarter-pair::before {
+      left:87.5px !important;
+      right:87.5px !important;
+    }
+
+    .quarter-pair .bracket-card-force {
+      padding-left:8px !important;
+      padding-right:8px !important;
+    }
+
+    @media (max-width:680px) {
+      .bracket-board {
+        width:780px !important;
+        min-width:780px !important;
+        max-width:780px !important;
+      }
+    }
+
   </style>
-<meta name="app-build" content="0815-bracket-teamname-fit">
+<meta name="app-build" content="0815-bracket-real-compact">
 </head>
 <body>
   <div class="app">
@@ -1261,7 +1336,10 @@
       <div class="loading"><div class="spinner"></div>대회 데이터를 불러오는 중입니다.</div>
     </main>
 
-    <div class="footer">공주교육대학교 동문화합의 날 · 배구대회 운영 시스템(오류가 있을 수 있으며 시간 차가 발생합니다)</div>
+    <div class="footer">
+      공주교육대학교 동문화합의 날 · 배구대회 운영 시스템
+      <span>(오류가 있을 수 있으며 시간 차가 발생합니다)</span>
+    </div>
   </div>
 
   <div class="overlay" id="modalOverlay">
