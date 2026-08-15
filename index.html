@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1277,7 +1279,98 @@
       }
     }
 
-  </style>
+  
+
+    /* ===== 종료 경기: 한눈에 구분되도록 회색 처리 ===== */
+    .match-card.done-match {
+      background:linear-gradient(135deg,#f0f2f1 0%,#fafbfa 56%) !important;
+      border-color:#d6dcD8 !important;
+      border-left-color:#a8b0ac !important;
+      box-shadow:0 5px 12px rgba(0,0,0,.035) !important;
+    }
+    .match-card.done-match .tag.done {
+      color:#68716c !important;
+      background:#e4e8e6 !important;
+      border-color:#d3d9d6 !important;
+    }
+    .match-card.done-match .status-dot.done { background:#89938e !important; }
+    .match-card.done-match .tag.round {
+      color:#747d78 !important;
+      background:#ecefed !important;
+      border-color:#d7dcda !important;
+    }
+    .match-card.done-match .venue-chip {
+      color:#727b76 !important;
+      background:#ecefed !important;
+      border-color:#d7dcda !important;
+    }
+    .match-card.done-match .match-bottom,
+    .match-card.done-match .vs { color:#858d89 !important; }
+    .match-card.done-match .scoreline { color:#737b77 !important; }
+    .match-card.done-match .team { color:#69716d !important; }
+    .match-card.done-match .winner-team { color:#343a37 !important; }
+    .match-card.done-match .winner-team::before { filter:grayscale(.15); }
+
+    /* ===== 대시보드 최종 우승팀 ===== */
+    .champion-section { margin-bottom:12px; }
+    .champion-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:9px;
+    }
+    .champion-card {
+      position:relative;
+      overflow:hidden;
+      min-height:88px;
+      padding:13px 15px;
+      border:1px solid #eadba2;
+      border-radius:16px;
+      background:linear-gradient(135deg,#fff9dc 0%,#fffdf6 58%,#fff 100%);
+      box-shadow:0 7px 16px rgba(139,103,0,.06);
+    }
+    .champion-card::after {
+      content:'🏆';
+      position:absolute;
+      right:10px;
+      bottom:-9px;
+      font-size:48px;
+      opacity:.08;
+      transform:rotate(-8deg);
+    }
+    .champion-card small {
+      display:block;
+      color:#8a7440;
+      font-size:11px;
+      font-weight:950;
+      margin-bottom:5px;
+    }
+    .champion-card b {
+      position:relative;
+      z-index:1;
+      display:block;
+      color:#6f5200;
+      font-size:20px;
+      line-height:1.18;
+      letter-spacing:-.03em;
+      word-break:keep-all;
+    }
+    .champion-card.pending {
+      border-color:#dce4df;
+      background:linear-gradient(135deg,#f5f7f6,#fff);
+      box-shadow:none;
+    }
+    .champion-card.pending::after { filter:grayscale(1); opacity:.045; }
+    .champion-card.pending small { color:#819087; }
+    .champion-card.pending b { color:#9aa39e; font-size:16px; }
+    @media (max-width:680px) {
+      .champion-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+      .champion-card { min-height:76px; padding:10px 8px; border-radius:13px; text-align:center; }
+      .champion-card small { font-size:10px; }
+      .champion-card b { font-size:15px; }
+      .champion-card.pending b { font-size:13px; }
+      .champion-card::after { font-size:38px; right:2px; bottom:-8px; }
+    }
+</style>
 <meta name="app-build" content="0815-bracket-real-compact">
 </head>
 <body>
@@ -1774,7 +1867,7 @@
     const palette = getMatchPalette(match);
     const cardStyle = `--division:${palette.accent}; --division-soft:${palette.soft}; border-left:8px solid ${palette.accent}; background:linear-gradient(135deg, ${palette.soft} 0%, #fff 56%)`;
     return `
-      <button class="match-card" style="${cardStyle}" data-match="${escapeHtml(match.id)}">
+      <button class="match-card ${match.status === '종료' ? 'done-match' : ''}" style="${cardStyle}" data-match="${escapeHtml(match.id)}">
         <div class="match-top">
           <span class="tag ${statusClass(match.status)}"><span class="status-dot ${statusClass(match.status)}"></span>&nbsp;${escapeHtml(statusLabel(match.status))}</span>
           <span class="tag round" style="color:${palette.accent}; background:${palette.soft}; border-color:${palette.accent}33">${escapeHtml(palette.label)} · ${escapeHtml(match.stage || '예선')}</span>
@@ -1797,7 +1890,7 @@
     const palette = getMatchPalette(match);
     const cardStyle = `--division:${palette.accent}; --division-soft:${palette.soft}; border-left:8px solid ${palette.accent}; background:linear-gradient(135deg, ${palette.soft} 0%, #fff 56%)`;
     return `
-      <button class="match-card" style="${cardStyle}" data-dashboard-match="${escapeHtml(match.id)}">
+      <button class="match-card ${match.status === '종료' ? 'done-match' : ''}" style="${cardStyle}" data-dashboard-match="${escapeHtml(match.id)}">
         <div class="match-top">
           <span class="tag ${statusClass(match.status)}"><span class="status-dot ${statusClass(match.status)}"></span>&nbsp;${escapeHtml(statusLabel(match.status))}</span>
           <span class="tag round" style="color:${palette.accent}; background:${palette.soft}; border-color:${palette.accent}33">${escapeHtml(palette.label)} · ${escapeHtml(match.stage || '예선')}</span>
@@ -1827,6 +1920,43 @@
 
     // 페이지 이동이 먼저 보이고, 이어서 해당 경기의 상세 입력창을 열도록 함
     setTimeout(() => openMatch(matchId), 180);
+  }
+
+  function dashboardChampions(data, stand) {
+    const tournament = data?.tournament || {};
+
+    const tournamentChampion = (division) => {
+      const rounds = tournament[division] || {};
+      const finalMatch = (rounds['결승'] || [])[0];
+      return finalMatch?.winner || '';
+    };
+
+    const mixedGroup = (stand || []).find(group => group.division === '혼성');
+    let mixedChampion = '';
+    if (mixedGroup?.complete && !mixedGroup?.needsCoinToss) {
+      const first = (mixedGroup.rows || []).find(row => Number(row.rank) === 1 && !row.tiePending && row.rankConfirmed !== false)
+        || (mixedGroup.rows || [])[0];
+      if (first && !first.tiePending && first.rankConfirmed !== false) mixedChampion = first.team || '';
+    }
+
+    return [
+      { label:'남자부', team:tournamentChampion('남자') },
+      { label:'여자부', team:tournamentChampion('여자') },
+      { label:'혼성부', team:mixedChampion }
+    ];
+  }
+
+  function dashboardChampionHtml(data, stand) {
+    const champions = dashboardChampions(data, stand);
+    return `<section class="card champion-section">
+      <div class="section-title"><h3>🏆 최종 우승팀</h3><small>확정되는 즉시 자동 표시됩니다.</small></div>
+      <div class="champion-grid">
+        ${champions.map(item => `<div class="champion-card ${item.team ? '' : 'pending'}">
+          <small>${escapeHtml(item.label)}</small>
+          <b>${item.team ? `🏆 ${escapeHtml(item.team)}` : '우승팀 대기'}</b>
+        </div>`).join('')}
+      </div>
+    </section>`;
   }
 
   function renderDashboard() {
@@ -1891,6 +2021,8 @@
           <small>${item.label}</small><b>${item.count}</b><span>${item.note}</span>
         </button>`).join('')}
       </div>
+
+      ${dashboardChampionHtml(data, stand)}
 
       <div class="grid two">
         <section class="card">
@@ -2294,7 +2426,7 @@
     const info = rawInfo.map(item => Object.assign({}, item, { category: normalizeInfoCategory(item.category) }));
     state.infoMode = mode;
 
-    const gameCategories = ['경기규칙', '경기장 안내', '주차 안내', '경기장 관리자'];
+    const gameCategories = ['경기규칙', '경기장 안내', '경기장 관리자'];
     const gameSet = new Set(gameCategories);
 
     const modeInfo = mode === 'game'
@@ -2318,8 +2450,8 @@
     const visible = modeInfo.filter(item => item.category === state.infoFilter);
     const title = mode === 'game' ? '경기 안내' : '점심 안내';
     const subtitle = mode === 'game'
-      ? '경기규칙·경기장(주차)·경기장 관리자 정보를 확인하세요.'
-      : '제휴식당 예약 상황과 주변 식당 정보를 확인하세요.';
+      ? '경기규칙·경기장·경기장 관리자 정보를 확인하세요.'
+      : '제휴식당 예약과 주변 식당 정보를 확인하세요.';
 
     $('#main').innerHTML = `
       <div class="section-title"><div><h3>${title}</h3><small>${subtitle}</small></div></div>
